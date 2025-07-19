@@ -38,18 +38,12 @@ export async function getProducts(): Promise<Product[]> {
   return responseJson.data;
 }
 
-// Define a simple type for a Post
-interface Post {
-  id: number;
-  title: string;
-  slug: string;
-}
-
 /**
  * Searches for posts in Strapi based on a query string.
  * @param {string} query The user's search term.
  * @returns {Promise<Post[]>} An array of posts matching the query.
  */
+
 export async function searchContent(query: string): Promise<Post[]> {
   if (!query) return [];
 
@@ -75,6 +69,7 @@ export async function searchContent(query: string): Promise<Post[]> {
  * Fetches all published posts from Strapi.
  * @returns {Promise<Post[]>} An array of posts.
  */
+
 export async function getPosts(): Promise<Post[]> {
   const STRAPI_URL =
     process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
@@ -88,4 +83,28 @@ export async function getPosts(): Promise<Post[]> {
   const responseJson = await res.json();
   // Return the data directly, assuming it's flattened
   return responseJson.data || responseJson;
+}
+
+
+/**
+ * Fetches a single post from Strapi by its slug.
+ * @param {string} slug The slug of the post to fetch.
+ * @returns {Promise<Post | null>} The post object or null if not found.
+ */
+export async function getPostBySlug(slug: string): Promise<Post | null> {
+  const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
+  const res = await fetch(`${STRAPI_URL}/api/posts?filters[slug][$eq]=${slug}&populate=*`);
+  
+  if (!res.ok) {
+    console.error("Failed to fetch post");
+    return null;
+  }
+
+  const responseJson = await res.json();
+  if (!responseJson.data || responseJson.data.length === 0) {
+    return null;
+  }
+  
+  // Return the first item from the data array (assuming it's flattened by a plugin)
+  return responseJson.data[0];
 }

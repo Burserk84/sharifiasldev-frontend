@@ -1,13 +1,14 @@
-import type { Metadata } from "next";
+import { Providers } from "@/app/providers"; // 1. Import the provider
+import Header from "@/components/layout/Header";
+import Footer from "@/components/layout/Footer";
 import { Vazirmatn } from "next/font/google";
 import "./globals.css";
 
-// Configure the font
 const vazirmatn = Vazirmatn({ subsets: ["latin", "arabic"] });
 
-export const metadata: Metadata = {
-  title: "SharifiaslDev",
-  description: "Full-stack developer portfolio",
+export const metadata = {
+  title: "SharifiaslDev | شریفی اصل",
+  description: "وب‌سایت شخصی و نمونه کار امیرعلی شریفی اصل",
 };
 
 export default function RootLayout({
@@ -18,10 +19,15 @@ export default function RootLayout({
   return (
     <html lang="fa" dir="rtl" suppressHydrationWarning>
       <body
-        className={`${vazirmatn.className} bg-primary-dark text-text-primary flex flex-col min-h-screen`}
+        className={`${vazirmatn.className} bg-black text-gray-100 flex flex-col min-h-screen`}
         suppressHydrationWarning
       >
-        {children}
+        {/* 2. Wrap the contents of your body with the Providers component */}
+        <Providers>
+          <Header />
+          <main className="flex-grow">{children}</main>
+          <Footer />
+        </Providers>
       </body>
     </html>
   );

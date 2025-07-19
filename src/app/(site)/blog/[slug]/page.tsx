@@ -1,73 +1,118 @@
-import { getPosts } from "@/lib/api";
-import { Remarkable } from "remarkable";
-import Image from "next/image";
+import { getPostBySlug, getPosts } from "@/lib/api";
 import type { Post } from "@/lib/definitions";
 
-/**
- * این تابع فقط یک پست را بر اساس slug آن از میان تمام پست‌ها پیدا می‌کند.
- * در یک پروژه واقعی، بهتر است یک اندپوینت جدا در API برای این کار داشته باشید.
- */
-async function getSinglePost(slug: string): Promise<Post | null> {
-  const posts = await getPosts();
-  const post = posts.find((p) => p.attributes.slug === slug);
-  return post || null;
-}
+import Image from "next/image";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
+import { Remarkable } from "remarkable";
+import * as cheerio from "cheerio";
+import slugify from "slugify";
+
+import Sidebar from "@/components/blog/Sidebar";
+import PostCard from "@/components/blog/PostCard";
+
+/**
+ * @file src/app/(site)/blog/[slug]/page.tsx
+ * @description این صفحه داینامیک مسئول رندر کردن یک پست وبلاگ به صورت تکی است.
+ * این یک Server Component است که داده‌های مورد نیاز خود را قبل از رندر شدن دریافت می‌کند.
+ */
 export default async function PostPage({
   params,
 }: {
   params: { slug: string };
 }) {
-  const post = await getSinglePost(params.slug);
-  const STRAPI_URL =
-    process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
+  // ۱. دریافت داده‌های پست فعلی و پست‌های مرتبط در سمت سرور
+  const { slug } = await params;
+  const post = await getPostBySlug(slug);
 
+  // اگر پستی با این اسلاگ پیدا نشد، صفحه 404 نمایش داده می‌شود
   if (!post) {
-    return (
-      <div className="container mx-auto py-12 text-center">
-        پست مورد نظر یافت نشد.
-      </div>
-    );
+    notFound();
   }
 
-  const imageUrl = post.attributes.coverImage?.data?.attributes?.url
-    ? `${STRAPI_URL}${post.attributes.coverImage.data.attributes.url}`
-    : null;
-
-  // تبدیل محتوای Markdown به HTML برای نمایش
+  // ۲. منطق تولید فهرست مطالب (TOC)
   const md = new Remarkable();
-  const htmlContent = post.attributes.content
-    ? md.render(post.attributes.content)
-    : "";
+  const htmlContent = post.content ? md.render(post.content) : "";
+
+  const $ = cheerio.load(htmlContent);
+  const headings = $("h2, h3");
+
+  const toc = headings
+    .map((i, el) => {
+      const text = $(el).text();
+      const id = slugify(text, { lower: true, strict: true });
+      $(el).attr("id", id); // اضافه کردن id به تگ‌های h2, h3
+      return {
+        id,
+        text,
+        level: parseInt(el.name.substring(1)),
+      };
+    })
+    .get();
+
+  const finalHtmlContent = $.html(); // دریافت HTML نهایی با id های اضافه شده
+
+  // ۳. آماده‌سازی داده‌های دیگر برای نمایش
+  const allPosts = await getPosts();
+  const relatedPosts = allPosts.filter((p) => p.id !== post.id).slice(0, 3);
+  const STRAPI_URL =
+    process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
+  const imageUrl = post.coverImage?.data?.attributes?.url
+    ? `${STRAPI_URL}${post.coverImage.data.url}`
+    : null;
 
   return (
     <div className="container mx-auto px-6 py-12">
-      <article className="max-w-4xl mx-auto">
-        {imageUrl && (
-          <div className="relative w-full aspect-video rounded-lg overflow-hidden mb-8">
-            <Image
-              src={imageUrl}
-              alt={post.attributes.title}
-              fill
-              className="object-cover"
+      {/* ۴. طرح‌بندی اصلی دو ستونی: محتوای اصلی و سایدبار */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+        <main className="lg:col-span-8">
+          <article>
+            <h1 className="text-4xl lg:text-5xl font-extrabold mb-4 text-white text-right">
+              {post.title}
+            </h1>
+            <p className="text-gray-400 mb-8 text-right">
+              منتشر شده در:{" "}
+              {new Date(post.createdAt).toLocaleDateString("fa-IR")}
+            </p>
+
+            {imageUrl && (
+              <div className="relative w-full aspect-video rounded-lg overflow-hidden mb-8 shadow-lg">
+                <Image
+                  src={imageUrl}
+                  alt={post.title}
+                  fill
+                  className="object-cover"
+                  priority
+                />
+              </div>
+            )}
+
+            <div
+              className="prose prose-invert lg:prose-xl max-w-none text-right leading-loose"
+              dangerouslySetInnerHTML={{ __html: finalHtmlContent }}
             />
-          </div>
-        )}
-        <h1 className="text-4xl font-extrabold mb-4 text-white">
-          {post.attributes.title}
-        </h1>
-        <p className="text-gray-400 mb-8">
-          منتشر شده در:{" "}
-          {new Date(post.attributes.createdAt).toLocaleDateString("fa-IR")}
-        </p>
-        {/* محتوای مقاله که از Markdown به HTML تبدیل شده در اینجا رندر می‌شود.
-              کلاس prose استایل‌های پیش‌فرض و زیبایی به تگ‌های HTML می‌دهد.
-            */}
-        <div
-          className="prose prose-invert lg:prose-xl max-w-none"
-          dangerouslySetInnerHTML={{ __html: htmlContent }}
-        />
-      </article>
+          </article>
+        </main>
+
+        <aside className="lg:col-span-4">
+          <Sidebar toc={toc} />
+        </aside>
+      </div>
+
+      {/* ۵. بخش نمایش پست‌های مرتبط در انتهای صفحه */}
+      <section className="mt-24">
+        <h2 className="text-3xl font-bold text-center mb-8">نوشته های دیگر</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {relatedPosts.map((relatedPost) => (
+            <PostCard
+              key={relatedPost.id}
+              post={relatedPost}
+              className="h-80"
+            />
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
