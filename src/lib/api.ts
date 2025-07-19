@@ -46,8 +46,7 @@ interface Post {
 }
 
 /**
- * Searches for content in Strapi based on a query string.
- * Currently searches in Posts.
+ * Searches for posts in Strapi based on a query string.
  * @param {string} query The user's search term.
  * @returns {Promise<Post[]>} An array of posts matching the query.
  */
@@ -57,9 +56,9 @@ export async function searchContent(query: string): Promise<Post[]> {
   const STRAPI_URL =
     process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
 
-  // Strapi's filter for case-insensitive "contains" search on the 'title' field
+  // The filter now uses the correct syntax for Strapi v4
   const res = await fetch(
-    `${STRAPI_URL}/api/posts?filters[title][$containsi]=${query}`
+    `${STRAPI_URL}/api/posts?filters[title][$containsi]=${query}&populate=*`
   );
 
   if (!res.ok) {
@@ -68,8 +67,8 @@ export async function searchContent(query: string): Promise<Post[]> {
   }
 
   const responseJson = await res.json();
-  // We need to map over the results to return a clean array
-  return responseJson.data.map((item: null) => item.attributes);
+  // Return the full data array, which includes 'id' and 'attributes'
+  return responseJson.data;
 }
 
 /**

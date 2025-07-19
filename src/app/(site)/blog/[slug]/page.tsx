@@ -1,56 +1,73 @@
-// Import a library to parse markdown content
-import { Remarkable } from 'remarkable';
+import { getPosts } from "@/lib/api";
+import { Remarkable } from "remarkable";
+import Image from "next/image";
+import type { Post } from "@/lib/definitions";
 
-// Define the types again for clarity
-interface Post {
-  id: number;
-  title: string;
-  slug: string;
-  content: string;
-  // Make sure to add any other fields you might need, like createdAt
-  createdAt: string;
+/**
+ * این تابع فقط یک پست را بر اساس slug آن از میان تمام پست‌ها پیدا می‌کند.
+ * در یک پروژه واقعی، بهتر است یک اندپوینت جدا در API برای این کار داشته باشید.
+ */
+async function getSinglePost(slug: string): Promise<Post | null> {
+  const posts = await getPosts();
+  const post = posts.find((p) => p.attributes.slug === slug);
+  return post || null;
 }
 
-// This function fetches a SINGLE post based on its slug
-async function getSinglePost(slug: string): Promise<{ data: Post[] }> {
-  // We use Strapi's filtering feature to find the post with the matching slug
-  const res = await fetch(`http://localhost:1337/api/posts?filters[slug][$eq]=${slug}`);
+export default async function PostPage({
+  params,
+}: {
+  params: { slug: string };
+}) {
+  const post = await getSinglePost(params.slug);
+  const STRAPI_URL =
+    process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
 
-  if (!res.ok) {
-    throw new Error('Failed to fetch single post');
+  if (!post) {
+    return (
+      <div className="container mx-auto py-12 text-center">
+        پست مورد نظر یافت نشد.
+      </div>
+    );
   }
 
-  return res.json();
-}
+  const imageUrl = post.attributes.coverImage?.data?.attributes?.url
+    ? `${STRAPI_URL}${post.attributes.coverImage.data.attributes.url}`
+    : null;
 
-// This is the main component for the single post page
-export default async function PostPage({ params }: { params: { slug: string } }) {
-  const { data } = await getSinglePost(params.slug);
-
-  // If no post is found, you can show a 404 page or a message
-  if (!data || data.length === 0) {
-    return <div>پست مورد نظر یافت نشد.</div>;
-  }
-
-  const post = data[0]; // The post data is inside the first element of the array
-
-  // Initialize the markdown parser
+  // تبدیل محتوای Markdown به HTML برای نمایش
   const md = new Remarkable();
-  const htmlContent = md.render(post.content);
+  const htmlContent = post.attributes.content
+    ? md.render(post.attributes.content)
+    : "";
 
   return (
-    <article className="p-8 max-w-3xl mx-auto">
-      <h1 className="text-4xl font-extrabold mb-4 text-gray-900 dark:text-gray-50">
-        {post.title}
-      </h1>
-      <p className="text-gray-500 mb-8">
-        منتشر شده در: {new Date(post.createdAt).toLocaleDateString('fa-IR')}
-      </p>
-      {/* We use dangerouslySetInnerHTML because our content is HTML from markdown */}
-      <div
-        className="prose dark:prose-invert lg:prose-xl"
-        dangerouslySetInnerHTML={{ __html: htmlContent }}
-      />
-    </article>
+    <div className="container mx-auto px-6 py-12">
+      <article className="max-w-4xl mx-auto">
+        {imageUrl && (
+          <div className="relative w-full aspect-video rounded-lg overflow-hidden mb-8">
+            <Image
+              src={imageUrl}
+              alt={post.attributes.title}
+              fill
+              className="object-cover"
+            />
+          </div>
+        )}
+        <h1 className="text-4xl font-extrabold mb-4 text-white">
+          {post.attributes.title}
+        </h1>
+        <p className="text-gray-400 mb-8">
+          منتشر شده در:{" "}
+          {new Date(post.attributes.createdAt).toLocaleDateString("fa-IR")}
+        </p>
+        {/* محتوای مقاله که از Markdown به HTML تبدیل شده در اینجا رندر می‌شود.
+              کلاس prose استایل‌های پیش‌فرض و زیبایی به تگ‌های HTML می‌دهد.
+            */}
+        <div
+          className="prose prose-invert lg:prose-xl max-w-none"
+          dangerouslySetInnerHTML={{ __html: htmlContent }}
+        />
+      </article>
+    </div>
   );
 }
