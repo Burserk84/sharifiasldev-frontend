@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
@@ -41,11 +41,12 @@ export default function Comments({ postId }: CommentsProps) {
   /**
    * تابعی برای دریافت لیست دیدگاه‌های مربوط به این پست از API استراپی.
    */
-  const fetchComments = async () => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const fetchComments = useCallback(async () => {
     try {
       // پلاگین کامنت استراپی از این اندپوینت برای هر پست استفاده می‌کند
       const res = await fetch(
-        `${STRAPI_URL}/api/comments/api::post:post:${postId}`
+        `${STRAPI_URL}/api/comments/api::post.post:${postId}`
       );
       if (!res.ok) throw new Error("Failed to fetch comments");
       const data = await res.json();
@@ -55,12 +56,12 @@ export default function Comments({ postId }: CommentsProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  });
 
   // دریافت دیدگاه‌ها در اولین رندر کامپوننت
   useEffect(() => {
     fetchComments();
-  }, [postId]);
+  }, [fetchComments, postId]);
 
   /**
    * این تابع هنگام ثبت فرم دیدگاه جدید اجرا می‌شود.
@@ -72,25 +73,29 @@ export default function Comments({ postId }: CommentsProps) {
 
     try {
       const res = await fetch(
-        `${STRAPI_URL}/api/comments/api::post:post:${postId}`,
+        `${STRAPI_URL}/api/comments/api::post.post:${postId}`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            // ارسال توکن JWT کاربر در هدر Authorization برای احرازهویت
             Authorization: `Bearer ${session.jwt}`,
           },
+          // The only change is here. We send ONLY the content.
           body: JSON.stringify({ content: newComment }),
         }
       );
 
-      if (!res.ok) throw new Error("Failed to post comment");
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error("Strapi responded with an error:", errorData);
+        throw new Error("Failed to post comment");
+      }
 
-      setNewComment(""); // پاک کردن فیلد ورودی
-      fetchComments(); // بارگذاری مجدد لیست دیدگاه‌ها برای نمایش کامنت جدید
+      setNewComment("");
+      fetchComments();
     } catch (error) {
       console.error(error);
-      alert("خطا در ارسال دیدگاه.");
+      alert("Failed to post comment.");
     }
   };
 

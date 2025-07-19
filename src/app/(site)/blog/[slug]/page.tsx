@@ -78,6 +78,8 @@ export default async function PostPage({
                   src={imageUrl}
                   alt={post.title}
                   fill
+                  // Add this 'sizes' prop
+                  sizes="(max-width: 1024px) 100vw, 66vw"
                   className="object-cover"
                   priority
                 />

@@ -4,25 +4,28 @@ import CredentialsProvider from "next-auth/providers/credentials";
 const handler = NextAuth({
   providers: [
     CredentialsProvider({
-      name: 'Credentials',
+      name: "Credentials",
       credentials: {
         identifier: { label: "Email", type: "text" },
-        password: { label: "Password", type: "password" }
+        password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         if (!credentials) return null;
 
         try {
-          const res = await fetch(`${process.env.NEXT_PUBLIC_STRAPI_URL}/api/auth/local`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              identifier: credentials.identifier,
-              password: credentials.password,
-            }),
-          });
+          const res = await fetch(
+            `${process.env.NEXT_PUBLIC_STRAPI_URL}/api/auth/local`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                identifier: credentials.identifier,
+                password: credentials.password,
+              }),
+            }
+          );
 
           const data = await res.json();
 
@@ -31,38 +34,34 @@ const handler = NextAuth({
             return { ...data.user, jwt: data.jwt };
           }
           return null;
-
         } catch (error) {
           console.error("Authorize Error:", error);
           return null;
         }
-      }
-    })
+      },
+    }),
   ],
   callbacks: {
-    // This callback is called whenever a JWT is created or updated.
+    // This callback adds data to the token
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.jwt = user.jwt;
+        token.username = user.username;
+        token.jwt = user.jwt; // Make sure the JWT from Strapi is added to the token
       }
       return token;
     },
-    // This callback is called whenever a session is checked.
+    // This callback adds data from the token to the session
     async session({ session, token }) {
       if (token) {
         session.user.id = token.id;
-        session.jwt = token.jwt;
+        session.user.username = token.username;
+        session.jwt = token.jwt; // Make sure the JWT is added to the final session object
       }
       return session;
-    }
-  },
-  // We are using JWT for session management
-  session: {
-    strategy: 'jwt',
-  },
+    },
   // You need to add a NEXTAUTH_SECRET to your .env.local file
   secret: process.env.NEXTAUTH_SECRET,
-});
+}});
 
 export { handler as GET, handler as POST };
