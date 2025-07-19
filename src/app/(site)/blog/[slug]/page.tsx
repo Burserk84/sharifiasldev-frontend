@@ -1,16 +1,12 @@
 import { getPostBySlug, getPosts } from "@/lib/api";
-import type { Post } from "@/lib/definitions";
-
 import Image from "next/image";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-
 import { Remarkable } from "remarkable";
 import * as cheerio from "cheerio";
 import slugify from "slugify";
-
 import Sidebar from "@/components/blog/Sidebar";
 import PostCard from "@/components/blog/PostCard";
+import Comments from "@/components/blog/Comments";
 
 /**
  * @file src/app/(site)/blog/[slug]/page.tsx
@@ -58,8 +54,8 @@ export default async function PostPage({
   const relatedPosts = allPosts.filter((p) => p.id !== post.id).slice(0, 3);
   const STRAPI_URL =
     process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
-  const imageUrl = post.coverImage?.data?.attributes?.url
-    ? `${STRAPI_URL}${post.coverImage.data.url}`
+  const imageUrl = post.coverImage?.url
+    ? `${STRAPI_URL}${post.coverImage.url}`
     : null;
 
   return (
@@ -93,6 +89,7 @@ export default async function PostPage({
               dangerouslySetInnerHTML={{ __html: finalHtmlContent }}
             />
           </article>
+          <Comments postId={post.id} />
         </main>
 
         <aside className="lg:col-span-4">

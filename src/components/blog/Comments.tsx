@@ -1,11 +1,17 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
-import { Button } from '@/components/ui/Button';
-import Link from 'next/link';
+import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
+import { Button } from "@/components/ui/Button";
+import Link from "next/link";
 
-// Define the shape of a comment
+/**
+ * @file src/components/blog/Comments.tsx
+ * @description کامپوننتی برای نمایش و ثبت دیدگاه‌ها برای یک پست خاص.
+ * این یک Client Component است زیرا نیاز به تعامل با کاربر و مدیریت state دارد.
+ */
+
+// تعریف ساختار داده برای یک دیدگاه
 interface Comment {
   id: number;
   content: string;
@@ -21,17 +27,26 @@ interface CommentsProps {
 }
 
 export default function Comments({ postId }: CommentsProps) {
+  // دریافت اطلاعات نشست (session) کاربر برای بررسی وضعیت ورود
   const { data: session } = useSession();
+
+  // Stateها برای مدیریت لیست دیدگاه‌ها، متن دیدگاه جدید و وضعیت بارگذاری
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
-  const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
+  const STRAPI_URL =
+    process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
 
-  // Function to fetch comments
+  /**
+   * تابعی برای دریافت لیست دیدگاه‌های مربوط به این پست از API استراپی.
+   */
   const fetchComments = async () => {
     try {
-      const res = await fetch(`${STRAPI_URL}/api/comments/api::post:post:${postId}`);
+      // پلاگین کامنت استراپی از این اندپوینت برای هر پست استفاده می‌کند
+      const res = await fetch(
+        `${STRAPI_URL}/api/comments/api::post:post:${postId}`
+      );
       if (!res.ok) throw new Error("Failed to fetch comments");
       const data = await res.json();
       setComments(data);
@@ -42,42 +57,50 @@ export default function Comments({ postId }: CommentsProps) {
     }
   };
 
-  // Fetch comments when the component mounts
+  // دریافت دیدگاه‌ها در اولین رندر کامپوننت
   useEffect(() => {
     fetchComments();
   }, [postId]);
 
-  // Function to handle form submission
+  /**
+   * این تابع هنگام ثبت فرم دیدگاه جدید اجرا می‌شود.
+   * یک درخواست POST احرازهویت‌شده به API استراپی ارسال می‌کند.
+   */
   const handleSubmitComment = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!newComment.trim() || !session) return;
 
     try {
-      const res = await fetch(`${STRAPI_URL}/api/comments/api::post:post:${postId}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          // Include the user's JWT for authentication
-          'Authorization': `Bearer ${session.jwt}`,
-        },
-        body: JSON.stringify({ content: newComment }),
-      });
+      const res = await fetch(
+        `${STRAPI_URL}/api/comments/api::post:post:${postId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            // ارسال توکن JWT کاربر در هدر Authorization برای احرازهویت
+            Authorization: `Bearer ${session.jwt}`,
+          },
+          body: JSON.stringify({ content: newComment }),
+        }
+      );
 
       if (!res.ok) throw new Error("Failed to post comment");
-      
-      setNewComment(""); // Clear the input
-      fetchComments(); // Refresh the comments list
+
+      setNewComment(""); // پاک کردن فیلد ورودی
+      fetchComments(); // بارگذاری مجدد لیست دیدگاه‌ها برای نمایش کامنت جدید
     } catch (error) {
       console.error(error);
-      alert("Failed to post comment.");
+      alert("خطا در ارسال دیدگاه.");
     }
   };
 
   return (
     <section className="mt-16">
-      <h2 className="text-3xl font-bold text-center mb-8">دیدگاهتان را بنویسید</h2>
+      <h2 className="text-3xl font-bold text-center mb-8">
+        دیدگاهتان را بنویسید
+      </h2>
 
-      {/* Comment Submission Form */}
+      {/* نمایش فرم ثبت دیدگاه فقط در صورتی که کاربر وارد شده باشد */}
       {session ? (
         <form onSubmit={handleSubmitComment} className="mb-12">
           <textarea
@@ -88,18 +111,29 @@ export default function Comments({ postId }: CommentsProps) {
             className="w-full bg-gray-700 border border-gray-600 rounded-md py-3 px-4 text-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-400"
             required
           ></textarea>
-          <Button type="submit" variant="primary" className="mt-4">ارسال دیدگاه</Button>
+          <Button type="submit" variant="primary" className="mt-4">
+            ارسال دیدگاه
+          </Button>
         </form>
       ) : (
+        // در غیر این صورت، یک پیام برای ورود به کاربر نمایش داده می‌شود
         <div className="text-center bg-gray-800 p-6 rounded-lg">
-          <p>برای ثبت دیدگاه، لطفاً <Link href="/login" className="text-orange-400 hover:underline">وارد شوید</Link>.</p>
+          <p>
+            برای ثبت دیدگاه، لطفاً{" "}
+            <Link href="/login" className="text-orange-400 hover:underline">
+              وارد شوید
+            </Link>
+            .
+          </p>
         </div>
       )}
 
-      {/* Display Existing Comments */}
+      {/* نمایش لیست دیدگاه‌ها یا پیام بارگذاری */}
       <div className="space-y-6">
         {isLoading ? (
-          <p>در حال بارگذاری دیدگاه‌ها...</p>
+          <p className="text-center text-gray-400">
+            در حال بارگذاری دیدگاه‌ها...
+          </p>
         ) : (
           comments.map((comment) => (
             <div key={comment.id} className="bg-gray-800 p-4 rounded-lg">
@@ -109,7 +143,9 @@ export default function Comments({ postId }: CommentsProps) {
                   {new Date(comment.createdAt).toLocaleDateString("fa-IR")}
                 </p>
               </div>
-              <p className="text-gray-300">{comment.content}</p>
+              <p className="text-gray-300 whitespace-pre-wrap">
+                {comment.content}
+              </p>
             </div>
           ))
         )}
