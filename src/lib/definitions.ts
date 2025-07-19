@@ -69,3 +69,11 @@ export interface PortfolioCardProps {
   technologies: string;
   link: string;
 }
+// برای پست های بلاگ
+export interface Post {
+  id: number;
+  title: string;
+  slug: string | null;
+  content: string; // You might want to add other fields here too
+  coverImage: StrapiImage | null;
+}

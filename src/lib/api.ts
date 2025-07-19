@@ -1,4 +1,4 @@
-import { PortfolioItem, Product } from "./definitions";
+import { Post, PortfolioItem, Product } from "./definitions";
 
 /**
  * @file src/lib/api.ts
@@ -7,7 +7,8 @@ import { PortfolioItem, Product } from "./definitions";
  */
 
 // آدرس پایه API از متغیرهای محیطی خوانده می‌شود تا قابل تغییر باشد
-const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
+const STRAPI_URL =
+  process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
 
 /**
  * دریافت لیست آیتم‌های نمونه کار از Strapi
@@ -16,9 +17,9 @@ const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337"
 export async function getPortfolioItems(): Promise<PortfolioItem[]> {
   const res = await fetch(`${STRAPI_URL}/api/portfolios?populate=*`);
   if (!res.ok) throw new Error("Failed to fetch portfolio items");
-  
+
   const responseJson = await res.json();
-  
+
   // این کد هر دو حالت پاسخ استاندارد و پاسخ "flattened" را مدیریت می‌کند
   return responseJson.data || responseJson;
 }
@@ -53,10 +54,13 @@ interface Post {
 export async function searchContent(query: string): Promise<Post[]> {
   if (!query) return [];
 
-  const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
-  
+  const STRAPI_URL =
+    process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
+
   // Strapi's filter for case-insensitive "contains" search on the 'title' field
-  const res = await fetch(`${STRAPI_URL}/api/posts?filters[title][$containsi]=${query}`);
+  const res = await fetch(
+    `${STRAPI_URL}/api/posts?filters[title][$containsi]=${query}`
+  );
 
   if (!res.ok) {
     console.error("Failed to fetch search results");
@@ -66,4 +70,23 @@ export async function searchContent(query: string): Promise<Post[]> {
   const responseJson = await res.json();
   // We need to map over the results to return a clean array
   return responseJson.data.map((item: null) => item.attributes);
+}
+
+/**
+ * Fetches all published posts from Strapi.
+ * @returns {Promise<Post[]>} An array of posts.
+ */
+export async function getPosts(): Promise<Post[]> {
+  const STRAPI_URL =
+    process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
+  const res = await fetch(`${STRAPI_URL}/api/posts?populate=*`);
+
+  if (!res.ok) {
+    console.error("Failed to fetch posts");
+    return [];
+  }
+
+  const responseJson = await res.json();
+  // Return the data directly, assuming it's flattened
+  return responseJson.data || responseJson;
 }

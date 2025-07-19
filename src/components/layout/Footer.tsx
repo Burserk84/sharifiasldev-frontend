@@ -22,7 +22,7 @@ export default function Footer() {
             <h3 className="text-lg font-bold text-white mb-4">خدمات</h3>
             <ul className="space-y-3">
               {services.map((service) => (
-                <li key={service.title}>{service.title}</li>
+                <li className="list-disc" key={service.title}>{service.title}</li>
               ))}
             </ul>
           </div>
