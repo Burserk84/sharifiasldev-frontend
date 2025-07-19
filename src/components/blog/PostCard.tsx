@@ -17,18 +17,18 @@ export default function PostCard({ post, className = "" }: PostCardProps) {
     process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
 
   // مسیر صحیح برای دسترسی به URL تصویر از ساختار استاندارد Strapi
-  const imageUrl = post.attributes.coverImage?.data?.attributes?.url
-    ? `${STRAPI_URL}${post.attributes.coverImage.data.attributes.url}`
+  const imageUrl = post.coverImage?.url
+    ? `${STRAPI_URL}${post.coverImage.url}`
     : "https://placehold.co/800x600/1f2937/f97616?text=No+Image";
 
   return (
     <Link
-      href={`/blog/${post.attributes.slug || post.id}`}
+      href={`/blog/${post.slug || post.id}`}
       className={`relative block group rounded-lg overflow-hidden shadow-lg ${className}`}
     >
       <Image
         src={imageUrl}
-        alt={post.attributes.title}
+        alt={post.title}
         fill
         className="object-cover transition-transform duration-300 group-hover:scale-105"
       />
@@ -36,7 +36,7 @@ export default function PostCard({ post, className = "" }: PostCardProps) {
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
       <div className="absolute bottom-0 left-0 p-6 text-right w-full">
         <h2 className="text-2xl font-bold text-white leading-tight">
-          {post.attributes.title}
+          {post.title}
         </h2>
       </div>
     </Link>
