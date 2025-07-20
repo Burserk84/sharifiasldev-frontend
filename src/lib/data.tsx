@@ -222,11 +222,16 @@ export const timelineData = [
   },
 ];
 
-
 // Data for the Devora vision section
 export const devoraValues = [
-  { title: "ماموریت Devora:", text: "توانمندسازی کسب‌وکارها با راه‌حل‌های دیجیتال خلاقانه و با کیفیت." },
-  { title: "ارزش‌های کلیدی:", text: "کیفیت، نوآوری، همکاری، و تعهد به موفقیت مشتری." },
+  {
+    title: "ماموریت Devora:",
+    text: "توانمندسازی کسب‌وکارها با راه‌حل‌های دیجیتال خلاقانه و با کیفیت.",
+  },
+  {
+    title: "ارزش‌های کلیدی:",
+    text: "کیفیت، نوآوری، همکاری، و تعهد به موفقیت مشتری.",
+  },
 ];
 
 // Data for the Devora team section
@@ -234,13 +239,28 @@ export const devoraTeam = [
   {
     role: "Full-Stack Lead",
     description: "(امیرعلی شریفی اصل) - هدایت فنی و توسعه جامع.",
-    icon: "🚀" },
+    icon: "🚀",
+  },
   {
     role: "Backend Developer",
     description: "متخصص در ساخت زیرساخت‌های قدرتمند و امن.",
-    icon: "💾" },
+    icon: "💾",
+  },
   {
     role: "UI/UX Designer",
     description: "خالق تجربه‌های کاربری زیبا و کارآمد.",
-    icon: "🖌️" },
+    icon: "🖌️",
+  },
 ];
+
+export interface PortfolioItem {
+  id: number;
+  title: string;
+  slug: string | null;
+  technologies: string;
+  coverImage: StrapiImage | null;
+  description: DescriptionBlock[] | null;
+  liveUrl: string | null;
+  gallery: StrapiImage[] | null;
+  features: { [key: string]: string } | null;
+}
