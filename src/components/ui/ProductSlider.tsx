@@ -68,7 +68,7 @@ export default function ProductSlider({ products }: ProductSliderProps) {
                 key={product.id}
               >
                 <Link
-                  href={`/products/${product.id}`}
+                  href={`/product/${product.slug}`}
                   className="block h-full group"
                 >
                   <div className="bg-gray-700 p-6 rounded-lg shadow-xl text-right h-full flex flex-col transition-transform duration-300 group-hover:-translate-y-2">

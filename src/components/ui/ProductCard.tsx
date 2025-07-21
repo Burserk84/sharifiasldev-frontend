@@ -1,30 +1,30 @@
-import Link from 'next/link';
-import Image from 'next/image';
-import type { Product } from '@/lib/definitions';
+import Link from "next/link";
+import Image from "next/image";
+import type { Product } from "@/lib/definitions";
 
 interface ProductCardProps {
   product: Product;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
-  
-  const imageUrl = product.productImage[0]?.url
+  const STRAPI_URL =
+    process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
+
+  // Access properties directly from the product object
+  const imageUrl = product.productImage?.[0]?.url
     ? `${STRAPI_URL}${product.productImage[0].url}`
     : "https://placehold.co/600x400/1f2937/f97616?text=No+Image";
 
-  // Format the price for display
-  const formattedPrice = new Intl.NumberFormat('fa-IR', {
-    style: 'currency',
-    currency: 'IRR',
+  const formattedPrice = new Intl.NumberFormat("fa-IR", {
+    style: "currency",
+    currency: "IRR",
     maximumFractionDigits: 0,
-  }).format(product.price * 10).replace('ریال', 'تومان');
+  })
+    .format(product.price * 10)
+    .replace("ریال", "تومان");
 
   return (
-    <Link 
-      href={`/products/${product.id}`} // We can build this page later
-      className="block group"
-    >
+    <Link href={`/product/${product.slug}`} className="block group">
       <div className="flex flex-col h-full rounded-lg overflow-hidden shadow-lg bg-gray-800 transition-transform duration-300 group-hover:-translate-y-2">
         <div className="relative w-full aspect-video">
           <Image
@@ -36,7 +36,9 @@ export default function ProductCard({ product }: ProductCardProps) {
           />
         </div>
         <div className="p-6 flex flex-col flex-grow">
-          <h3 className="text-xl font-bold text-gray-100 flex-grow">{product.name}</h3>
+          <h3 className="text-xl font-bold text-gray-100 flex-grow">
+            {product.name}
+          </h3>
           <p className="mt-4 text-2xl font-bold text-orange-400 text-left">
             {formattedPrice}
           </p>

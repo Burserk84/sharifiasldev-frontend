@@ -22,21 +22,6 @@ export interface DescriptionBlock {
 }
 
 /**
- * ساختار داده‌ی یک محصول.
- * این اینترفیس از ساختار استاندارد پاسخ Strapi v4 استفاده می‌کند که تمام فیلدها
- * داخل یک آبجکت `attributes` قرار دارند.
- */
-export interface Product {
-  id: number;
-  attributes: {
-    name: string;
-    description: DescriptionBlock[];
-    price: number;
-    productImage: StrapiImage[];
-  };
-}
-
-/**
  * ساختار داده‌ی یک نمونه کار.
  * نکته: این اینترفیس یک ساختار "flattened" (مسطح) را نشان می‌دهد که در آن فیلدها
  * مستقیماً روی آبجکت اصلی قرار دارند و `attributes` وجود ندارد. این حالت معمولاً
@@ -78,6 +63,12 @@ export interface Post {
   coverImage: StrapiImage | null;
 }
 
+/**
+ * ساختار داده‌ی یک محصول.
+ * این اینترفیس از ساختار استاندارد پاسخ Strapi v4 استفاده می‌کند که تمام فیلدها
+ * داخل یک آبجکت `attributes` قرار دارند.
+ */
+
 export interface Category {
   id: number;
   name: string;
@@ -86,16 +77,16 @@ export interface Category {
   // We don't need to define children here, it's handled by the menu builder
 }
 
+
 export interface Product {
   id: number;
-  attributes: {
-    name: string;
-    description: DescriptionBlock[];
-    price: number;
-    productImage: StrapiImage[];
-    // Change this property
-    categories: {
-      data: Category[] | null;
-    };
-  };
+  name: string;
+  slug: string;
+  description: DescriptionBlock[] | null;
+  price: number;
+  productImage: StrapiImage[] | null;
+  isFeatured: boolean | null;
+  popularity: number | null;
+  details: { [key: string]: string } | null; // For the details table
+  gallery: StrapiImage[] | null; // For the image gallery
 }

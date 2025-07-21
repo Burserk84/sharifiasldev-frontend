@@ -1,4 +1,5 @@
 import {
+  Product,
   Category,
   Post,
   PortfolioItem,
@@ -189,4 +190,28 @@ export async function getCategories(): Promise<Category[]> {
   const responseJson = await res.json();
   // Return the data array, which contains our flattened objects
   return responseJson.data;
+}
+
+/**
+ * Fetches a single product from Strapi by its ID.
+ * @param {string | number} productId The ID of the product to fetch.
+ * @returns {Promise<Product | null>} The product object or null if not found.
+ */
+
+export async function getProductBySlug(slug: string): Promise<Product | null> {
+  const STRAPI_URL =
+    process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
+  const res = await fetch(
+    `${STRAPI_URL}/api/products?filters[slug][$eq]=${slug}&populate=*`
+  );
+
+  if (!res.ok) {
+    console.error("Failed to fetch product by slug");
+    return null;
+  }
+  const responseJson = await res.json();
+  if (!responseJson.data || responseJson.data.length === 0) return null;
+
+  // A filter query always returns an array, so we return the first item
+  return responseJson.data[0];
 }
