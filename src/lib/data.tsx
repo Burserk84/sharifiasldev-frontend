@@ -33,22 +33,18 @@ export const menu = [
   {
     title: "بلاگ",
     link: "/blog",
-    submenu: [
-      {
-        title: "ترفندهای وردپرسی",
-        link: "/blog/wp_tips",
-      },
-      {
-        title: "تجربه های شخصی",
-        link: "/blog/journal",
-      },
-    ],
   },
 
   { title: "نمونه کارها", link: "/portfolio" },
   { title: "تماس با ما", link: "/contact" },
   { title: "درباره ما", link: "/about" },
 ];
+
+export interface DropdownMenuProps {
+  title: string;
+  submenu: SubMenuItem[];
+  link: string; // Add the link prop
+}
 
 // داده‌های مربوط به بخش "پلن‌های پروژه سفارشی" در صفحه اصلی
 export const pricingPlans = [

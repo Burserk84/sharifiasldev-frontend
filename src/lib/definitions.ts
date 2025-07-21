@@ -77,3 +77,25 @@ export interface Post {
   content: string; // You might want to add other fields here too
   coverImage: StrapiImage | null;
 }
+
+export interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  category: Category | null; // This is the parent category
+  // We don't need to define children here, it's handled by the menu builder
+}
+
+export interface Product {
+  id: number;
+  attributes: {
+    name: string;
+    description: DescriptionBlock[];
+    price: number;
+    productImage: StrapiImage[];
+    // Change this property
+    categories: {
+      data: Category[] | null;
+    };
+  };
+}

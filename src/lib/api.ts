@@ -1,4 +1,10 @@
-import { Post, PortfolioItem, Product, PortfolioItem } from "./definitions";
+import {
+  Category,
+  Post,
+  PortfolioItem,
+  Product,
+  PortfolioItem,
+} from "./definitions";
 
 /**
  * @file src/lib/api.ts
@@ -138,4 +144,49 @@ export async function getPortfolioItemBySlug(
 
   // Return the first item from the data array
   return responseJson.data[0];
+}
+
+/**
+ * Fetches all products that belong to a specific category.
+ * @param {string} categorySlug The slug of the category to filter by.
+ * @returns {Promise<Product[]>} An array of products in that category.
+ */
+
+export async function getProductsByCategory(
+  categorySlug: string
+): Promise<Product[]> {
+  const STRAPI_URL =
+    process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
+  // Change the filter from 'category' to 'categories'
+  const res = await fetch(
+    `${STRAPI_URL}/api/products?populate=*&filters[categories][slug][$eq]=${categorySlug}`
+  );
+
+  if (!res.ok) {
+    console.error("Failed to fetch products by category");
+    return [];
+  }
+
+  const responseJson = await res.json();
+  return responseJson.data;
+}
+
+/**
+ * Fetches all product categories from Strapi.
+ * @returns {Promise<Category[]>} An array of categories.
+ */
+export async function getCategories(): Promise<Category[]> {
+  const STRAPI_URL =
+    process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
+  // We need to populate the 'category' field, which is the parent
+  const res = await fetch(`${STRAPI_URL}/api/categories?populate=category`);
+
+  if (!res.ok) {
+    console.error("Failed to fetch categories");
+    return [];
+  }
+
+  const responseJson = await res.json();
+  // Return the data array, which contains our flattened objects
+  return responseJson.data;
 }

@@ -13,8 +13,17 @@ export default function AuthorCard() {
             <p className="text-sm text-gray-400">توسعه‌دهنده فول-استک</p>
           </div>
         </div>
+        <p className="text-gray-400 mt-4 mr-2">
+          علاقه‌مند به اشتراک‌گذاری دانش و تجربیات در حوزه وب. با چشم‌انداز ساخت
+          تیم Devora برای ارائه راه‌حل‌های نوآورانه.
+        </p>
       </div>
-      <Link href="/about" className="text-sm text-orange-400 hover:underline mt-4">بیشتر بخوانید &larr;</Link>
+      <Link
+        href="/about"
+        className="text-sm text-orange-400 hover:underline mt-4"
+      >
+        بیشتر بخوانید &larr;
+      </Link>
     </div>
   );
 }
