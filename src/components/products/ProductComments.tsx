@@ -55,17 +55,16 @@ export default function ProductComments({ productId }: ProductCommentsProps) {
     if (!newComment.trim() || !session) return;
 
     try {
-      const res = await fetch(
-        `${STRAPI_URL}/api/comments/api::product.product:${productId}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session.jwt}`,
-          },
-          body: JSON.stringify({ content: newComment }),
-        }
-      );
+      const res = await fetch(`/api/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content: newComment,
+          // We will also use 'postId' for consistency, passing the productId into it
+          postId: productId,
+          contentType: "api::product.product",
+        }),
+      });
 
       if (!res.ok) throw new Error("Failed to post comment");
 

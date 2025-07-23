@@ -5,6 +5,7 @@ import {
   PortfolioItem,
   Product,
   PortfolioItem,
+  Comment,
 } from "./definitions";
 
 /**
@@ -214,4 +215,27 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
 
   // A filter query always returns an array, so we return the first item
   return responseJson.data[0];
+}
+
+/**
+ * Fetches all comments made by the currently logged-in user.
+ * @param {string} jwt The user's Strapi JWT.
+ * @returns {Promise<Comment[]>} An array of the user's comments.
+ */
+
+export async function getUserComments(jwt: string): Promise<Comment[]> {
+  const STRAPI_URL =
+    process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
+  const res = await fetch(`${STRAPI_URL}/api/comments/user/me`, {
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+    },
+  });
+
+  if (!res.ok) {
+    console.error("Failed to fetch user comments");
+    return [];
+  }
+
+  return res.json();
 }

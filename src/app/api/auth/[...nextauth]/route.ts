@@ -6,32 +6,32 @@ const handler = NextAuth({
     CredentialsProvider({
       name: "Credentials",
       credentials: {
-        identifier: { label: "Email", type: "text" },
+        identifier: { label: "Email or Username", type: "text" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         if (!credentials) return null;
-
         try {
           const res = await fetch(
             `${process.env.NEXT_PUBLIC_STRAPI_URL}/api/auth/local`,
             {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
+              headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
                 identifier: credentials.identifier,
                 password: credentials.password,
               }),
             }
           );
-
           const data = await res.json();
-
-          if (data.user) {
-            // Return user and jwt to be stored in the session
-            return { ...data.user, jwt: data.jwt };
+          if (data.user && data.jwt) {
+            // Return a clean user object with the JWT
+            return {
+              id: data.user.id,
+              username: data.user.username,
+              email: data.user.email,
+              jwt: data.jwt,
+            };
           }
           return null;
         } catch (error) {
@@ -42,26 +42,27 @@ const handler = NextAuth({
     }),
   ],
   callbacks: {
-    // This callback adds data to the token
+    // This callback runs when the JWT is created
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
         token.username = user.username;
-        token.jwt = user.jwt; // Make sure the JWT from Strapi is added to the token
+        token.jwt = user.jwt;
       }
       return token;
     },
-    // This callback adds data from the token to the session
+    // This callback runs when the session is accessed
     async session({ session, token }) {
-      if (token) {
-        session.user.id = token.id;
+      if (session.user) {
+        session.user.id = token.id; // Ensure the user ID is passed from the token
         session.user.username = token.username;
-        session.jwt = token.jwt; // Make sure the JWT is added to the final session object
       }
+      session.jwt = token.jwt;
       return session;
     },
-  // You need to add a NEXTAUTH_SECRET to your .env.local file
+  },
+  session: { strategy: "jwt" },
   secret: process.env.NEXTAUTH_SECRET,
-}});
+});
 
 export { handler as GET, handler as POST };
