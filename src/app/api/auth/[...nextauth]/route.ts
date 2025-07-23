@@ -43,18 +43,22 @@ export const authOptions: AuthOptions = {
     }),
   ],
   callbacks: {
+    // This callback runs when the JWT is created
     async jwt({ token, user }) {
+      // On the initial sign-in, the 'user' object from the 'authorize' function is available
       if (user) {
         token.id = user.id;
-        token.username = user.username;
+        token.username = user.username; // Ensure username is added to the token
         token.jwt = user.jwt;
       }
       return token;
     },
+    // This callback runs when the session is accessed
     async session({ session, token }) {
+      // Pass the properties from the token to the final session object
       if (session.user) {
         session.user.id = token.id;
-        session.user.username = token.username;
+        session.user.username = token.username; // Ensure username is added to the session.user
       }
       session.jwt = token.jwt;
       return session;
