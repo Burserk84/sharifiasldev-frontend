@@ -6,7 +6,6 @@ import * as cheerio from "cheerio";
 import slugify from "slugify";
 import Sidebar from "@/components/blog/Sidebar";
 import PostCard from "@/components/blog/PostCard";
-import Comments from "@/components/blog/Comments";
 
 /**
  * @file src/app/(site)/blog/[slug]/page.tsx
@@ -91,7 +90,6 @@ export default async function PostPage({
               dangerouslySetInnerHTML={{ __html: finalHtmlContent }}
             />
           </article>
-          <Comments postId={post.id} />
         </main>
 
         <aside className="lg:col-span-4">

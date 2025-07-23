@@ -4,7 +4,6 @@ import { Remarkable } from "remarkable";
 import type { DescriptionBlock } from "@/lib/definitions";
 import { getProductBySlug } from "@/lib/api";
 import ProductGallery from "@/components/products/ProductGallery";
-import ProductComments from "@/components/products/ProductComments";
 
 // Helper function to convert Strapi's Rich Text JSON to a string
 function richTextToString(description: DescriptionBlock[] | null): string {
@@ -120,10 +119,6 @@ export default async function SingleProductPage({
         </div>
       </div>
 
-      {/* comment section */}
-      <div className="max-w-4xl mx-auto mt-16">
-        <ProductComments productId={product.id} />
-      </div>
     </div>
   );
 }

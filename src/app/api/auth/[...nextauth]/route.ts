@@ -1,7 +1,8 @@
-import NextAuth from "next-auth";
+import NextAuth, { AuthOptions } from "next-auth"; // Import AuthOptions
 import CredentialsProvider from "next-auth/providers/credentials";
 
-const handler = NextAuth({
+// 1. Define and export your auth configuration object
+export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -10,6 +11,7 @@ const handler = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
+        // ... (your existing authorize logic)
         if (!credentials) return null;
         try {
           const res = await fetch(
@@ -25,7 +27,6 @@ const handler = NextAuth({
           );
           const data = await res.json();
           if (data.user && data.jwt) {
-            // Return a clean user object with the JWT
             return {
               id: data.user.id,
               username: data.user.username,
@@ -42,7 +43,6 @@ const handler = NextAuth({
     }),
   ],
   callbacks: {
-    // This callback runs when the JWT is created
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
@@ -51,10 +51,9 @@ const handler = NextAuth({
       }
       return token;
     },
-    // This callback runs when the session is accessed
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id; // Ensure the user ID is passed from the token
+        session.user.id = token.id;
         session.user.username = token.username;
       }
       session.jwt = token.jwt;
@@ -63,6 +62,9 @@ const handler = NextAuth({
   },
   session: { strategy: "jwt" },
   secret: process.env.NEXTAUTH_SECRET,
-});
+};
+
+// 2. Use the configuration to create the handler
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };

@@ -1,12 +1,12 @@
 import { getServerSession } from "next-auth";
 import { redirect } from "next/navigation";
 import SignOutButton from "@/components/auth/SignOutButton";
-// We don't need the api calls for now, let's simplify to get it working.
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export default async function DashboardPage() {
-  const session = await getServerSession();
+  const session = await getServerSession(authOptions);
 
-  // Revert to the original, more reliable check
+  // First, check if the user is logged in at all.
   if (!session) {
     redirect("/login");
   }
@@ -23,24 +23,19 @@ export default async function DashboardPage() {
             </span>
             !
           </p>
-          {/* Add a message if the JWT is missing */}
+
+          {/* Add the error message back if the JWT is missing */}
           {!session.jwt && (
-            <p className="mt-4 p-4 bg-red-800/50 text-red-300 border border-red-500 rounded-md">
-              خطا: توکن احراز هویت Strapi یافت نشد. قابلیت‌هایی مانند ثبت دیدگاه
-              کار نخواهند کرد. لطفاً دوباره وارد شوید.
-            </p>
+            <div className="mt-4 p-4 bg-red-800/50 text-red-300 border border-red-500 rounded-md">
+              <p className="font-bold">خطا در اتصال به حساب کاربری</p>
+              <p className="text-sm">
+                توکن احراز هویت Strapi یافت نشد. قابلیت‌هایی مانند ثبت دیدگاه
+                کار نخواهند کرد. لطفاً دوباره وارد شوید.
+              </p>
+            </div>
           )}
         </div>
 
-        {/* We will add the comments list back after this is fixed */}
-        <div className="bg-gray-800 rounded-lg p-6">
-          <h2 className="text-2xl font-bold mb-6 text-white">
-            ویژگی‌های آینده
-          </h2>
-          <p className="text-gray-400">
-            در آینده در این بخش می‌توانید دیدگاه‌های خود را مدیریت کنید.
-          </p>
-        </div>
 
         <div className="mt-8">
           <SignOutButton />
