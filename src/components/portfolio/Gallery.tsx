@@ -4,14 +4,10 @@ import { useState } from "react";
 import Image from "next/image";
 import Lightbox from "yet-another-react-lightbox";
 import "yet-another-react-lightbox/styles.css";
-
-interface Image {
-  id: number;
-  url: string;
-}
+import type { StrapiImage } from "@/lib/definitions"; // It's better to use the shared type
 
 interface GalleryProps {
-  images: Image[];
+  images: StrapiImage[];
 }
 
 export default function Gallery({ images }: GalleryProps) {
@@ -19,7 +15,9 @@ export default function Gallery({ images }: GalleryProps) {
   const STRAPI_URL =
     process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
 
-  const slides = images.map((img) => ({ src: `${STRAPI_URL}${img.url}` }));
+  const slides = images.map((img) => ({
+    src: `${STRAPI_URL}${img.attributes.url}`,
+  }));
 
   return (
     <>
@@ -31,7 +29,8 @@ export default function Gallery({ images }: GalleryProps) {
             onClick={() => setIndex(i)}
           >
             <Image
-              src={`${STRAPI_URL}${image.url}`}
+              // Corrected the URL construction here
+              src={`${STRAPI_URL}${image.attributes.url}`}
               alt={`Gallery image ${i + 1}`}
               fill
               sizes="(max-width: 768px) 50vw, 33vw"

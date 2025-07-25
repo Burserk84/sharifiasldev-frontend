@@ -1,8 +1,7 @@
-// Define the shape of our heading data
 type TocEntry = {
   id: string;
   text: string;
-  level: number; // To know if it's an h2 or h3
+  level: number;
 };
 
 interface TableOfContentsProps {

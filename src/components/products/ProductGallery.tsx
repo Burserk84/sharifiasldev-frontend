@@ -34,7 +34,7 @@ export default function ProductGallery({
           src={`${STRAPI_URL}${allImages[activeIndex].url}`}
           alt="Main product image"
           fill
-          sizes="(max-width: 1024px) 100vw, 50vw"
+          sizes="(max-width: 1024px) 100vw, 50vw" // Add this
           className="object-cover"
           priority
         />
@@ -56,7 +56,7 @@ export default function ProductGallery({
               src={`${STRAPI_URL}${image.url}`}
               alt={`Thumbnail ${index + 1}`}
               fill
-              sizes="20vw"
+              sizes="20vw" // Add this
               className="object-cover"
             />
           </div>

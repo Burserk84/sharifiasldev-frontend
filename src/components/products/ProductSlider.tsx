@@ -6,11 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/lib/definitions";
 
-interface ProductSliderProps {
-  products: Product[];
-}
-
-export default function ProductSlider({ products }: ProductSliderProps) {
+export default function ProductSlider({ products }: { products: Product[] }) {
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "center",
     loop: true,
@@ -42,25 +38,16 @@ export default function ProductSlider({ products }: ProductSliderProps) {
 
   return (
     <div className="relative">
-      {/* The Slider Viewport */}
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex">
           {products.map((product) => {
-            const imageUrl = product.productImage?.[0]?.url
-              ? `http://localhost:1337${product.productImage[0].url}`
+            // Access all properties via the 'attributes' object
+            const { name, price, productImage, slug, description } =
+              product.attributes;
+
+            const imageUrl = productImage?.data?.[0]?.attributes?.url
+              ? `http://localhost:1337${productImage.data[0].attributes.url}`
               : "https://placehold.co/1600x900/1f2937/f97616?text=No+Image";
-
-            const descriptionText =
-              product.description?.[0]?.children?.[0]?.text ||
-              "No description available.";
-
-            const formattedPrice = new Intl.NumberFormat("fa-IR", {
-              style: "currency",
-              currency: "IRR",
-              maximumFractionDigits: 0,
-            })
-              .format(product.price * 10)
-              .replace("ریال", "تومان");
 
             return (
               <div
@@ -68,25 +55,25 @@ export default function ProductSlider({ products }: ProductSliderProps) {
                 key={product.id}
               >
                 <Link
-                  href={`/product/${product.slug}`}
+                  href={`/product/${slug || product.id}`}
                   className="block h-full group"
                 >
                   <div className="bg-gray-700 p-6 rounded-lg shadow-xl text-right h-full flex flex-col transition-transform duration-300 group-hover:-translate-y-2">
                     <div className="relative w-full aspect-video rounded-md overflow-hidden">
                       <Image
                         src={imageUrl}
-                        alt={product.name}
+                        alt={name}
                         fill
                         className="object-cover"
                       />
                     </div>
                     <div className="flex flex-col flex-grow mt-6">
-                      <h3 className="text-xl font-bold">{product.name}</h3>
+                      <h3 className="text-xl font-bold">{name}</h3>
                       <p className="mt-2 text-gray-400 leading-relaxed flex-grow">
-                        {descriptionText}
+                        {description}
                       </p>
                       <p className="mt-4 text-2xl font-bold text-orange-400 text-left">
-                        {formattedPrice}
+                        {price}
                       </p>
                     </div>
                   </div>

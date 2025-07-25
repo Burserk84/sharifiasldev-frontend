@@ -29,12 +29,18 @@ export default function ProductList({
     const fetchProducts = async () => {
       setIsLoading(true);
 
+      // Build the query parameters correctly
       const queryParams = new URLSearchParams({ sort: sortBy });
       if (searchTerm) queryParams.append("_q", searchTerm);
-      if (categorySlug) queryParams.append("category", categorySlug);
+
+      // --- KEY CHANGE HERE ---
+      // Use the correct filter format for the category slug
+      if (categorySlug) {
+        queryParams.append("filters[category][slug][$eq]", categorySlug);
+      }
 
       try {
-        // Fetch from our new local API route
+        // Fetch from our API route. Now it will pass the correct filter.
         const res = await fetch(`/api/products?${queryParams.toString()}`);
         if (!res.ok) throw new Error("Failed to fetch products");
         const data = await res.json();
@@ -48,7 +54,7 @@ export default function ProductList({
 
     const debounceFetch = setTimeout(() => {
       fetchProducts();
-    }, 300); 
+    }, 300);
 
     return () => clearTimeout(debounceFetch);
   }, [searchTerm, sortBy, categorySlug, initialProducts]);

@@ -1,4 +1,4 @@
-import NextAuth, { AuthOptions } from "next-auth"; // Import AuthOptions
+import NextAuth, { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
 // 1. Define and export your auth configuration object
@@ -11,7 +11,6 @@ export const authOptions: AuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        // ... (your existing authorize logic)
         if (!credentials) return null;
         try {
           const res = await fetch(
@@ -32,6 +31,8 @@ export const authOptions: AuthOptions = {
               username: data.user.username,
               email: data.user.email,
               jwt: data.jwt,
+              firstName: data.user.firstName,
+              lastName: data.user.lastName,
             };
           }
           return null;
@@ -48,8 +49,10 @@ export const authOptions: AuthOptions = {
       // On the initial sign-in, the 'user' object from the 'authorize' function is available
       if (user) {
         token.id = user.id;
-        token.username = user.username; // Ensure username is added to the token
+        token.username = user.username;
         token.jwt = user.jwt;
+        token.firstName = user.firstName;
+        token.lastName = user.lastName;
       }
       return token;
     },
@@ -58,7 +61,9 @@ export const authOptions: AuthOptions = {
       // Pass the properties from the token to the final session object
       if (session.user) {
         session.user.id = token.id;
-        session.user.username = token.username; // Ensure username is added to the session.user
+        session.user.username = token.username;
+        session.user.firstName = token.firstName;
+        session.user.lastName = token.lastName;
       }
       session.jwt = token.jwt;
       return session;

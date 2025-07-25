@@ -7,39 +7,6 @@ import React from "react";
  */
 
 // داده های مربوط به منو در هدر
-export const menu = [
-  { title: "خانه", link: "/" },
-  {
-    title: "فروشگاه",
-    link: "/products",
-    submenu: [
-      {
-        title: "قالب‌ها و تم‌ها",
-        link: "/products/themes",
-        submenu: [
-          {
-            title: "قالب Html",
-            link: "/products/themes/html_template",
-          },
-          {
-            title: "قالب وردپرس",
-            link: "/products/themes/wp_template",
-          },
-        ],
-      },
-      { title: "افزونه وردپرس", link: "/products/plugins" },
-    ],
-  },
-  {
-    title: "بلاگ",
-    link: "/blog",
-  },
-
-  { title: "نمونه کارها", link: "/portfolio" },
-  { title: "تماس با ما", link: "/contact" },
-  { title: "درباره ما", link: "/about" },
-];
-
 export interface DropdownMenuProps {
   title: string;
   submenu: SubMenuItem[];

@@ -1,20 +1,25 @@
 /**
  * @file src/lib/definitions.ts
- * @description این فایل شامل تمام تعاریف TypeScript (interfaces) برای نوع‌دهی داده‌هایی است
- * که از Strapi API دریافت می‌شوند. داشتن یک منبع واحد برای typeها از بروز خطا جلوگیری کرده
- * و خوانایی کد را افزایش می‌دهد.
+ * @description This file contains all TypeScript interfaces for data types from the Strapi API.
+ * Having a single source of truth for types prevents errors and improves code readability.
  */
 
 /**
- * ساختار داده‌ی یک تصویر که از فیلد Media در Strapi می‌آید.
+ * The structure of an image object from Strapi's Media Library.
  */
 export interface StrapiImage {
   id: number;
-  url: string;
+  attributes: {
+    name: string;
+    url: string;
+    width: number;
+    height: number;
+    alternativeText?: string;
+  };
 }
 
 /**
- * ساختار یک بلاک از ویرایشگر Rich Text در Strapi.
+ * The structure of a block from Strapi's Rich Text editor.
  */
 export interface DescriptionBlock {
   type: string;
@@ -22,71 +27,83 @@ export interface DescriptionBlock {
 }
 
 /**
- * ساختار داده‌ی یک نمونه کار.
- * نکته: این اینترفیس یک ساختار "flattened" (مسطح) را نشان می‌دهد که در آن فیلدها
- * مستقیماً روی آبجکت اصلی قرار دارند و `attributes` وجود ندارد. این حالت معمولاً
- * نتیجه استفاده از پلاگین‌هایی مانند 'strapi-plugin-transformer' است.
+ * The structure for a Category, including parent/child relations for nesting.
  */
-export interface PortfolioItem {
+export interface Category {
   id: number;
-  title: string;
-  slug: string | null;
-  technologies: string;
-  coverImage: StrapiImage | null;
-}
-
-// تعریف ساختار داده برای آیتم‌های منو و زیرمنو
-export interface SubMenuItem {
-  title: string;
-  link: string;
-  submenu?: SubMenuItem[]; // زیرمنو اختیاری است و باعث بازگشتی شدن ساختار می‌شود
-}
-
-export interface DropdownMenuProps {
-  title: string;
-  submenu: SubMenuItem[];
-}
-
-// تعریف ساختار پراپ‌های ورودی کامپوننت برای استفاده از TypeScript
-export interface PortfolioCardProps {
-  imageUrl: string;
-  title: string;
-  technologies: string;
-  link: string;
-}
-// برای پست های بلاگ
-export interface Post {
-  id: number;
-  title: string;
-  slug: string | null;
-  content: string; // You might want to add other fields here too
-  coverImage: StrapiImage | null;
+  attributes: {
+    name: string;
+    slug: string;
+    parent: { data: Category | null };
+    children: { data: Category[] | null };
+  };
 }
 
 /**
- * ساختار داده‌ی یک محصول.
- * این اینترفیس از ساختار استاندارد پاسخ Strapi v4 استفاده می‌کند که تمام فیلدها
- * داخل یک آبجکت `attributes` قرار دارند.
+ * The structure for a Product, including all custom fields and relations.
  */
-
-export interface Category {
-  id: number;
-  name: string;
-  slug: string;
-  category: Category | null; // This is the parent category
-  // We don't need to define children here, it's handled by the menu builder
-}
-
-
 export interface Product {
   id: number;
-  name: string;
-  slug: string;
-  description: DescriptionBlock[] | null;
-  price: number;
-  productImage: StrapiImage[] | null;
-  isFeatured: boolean | null;
-  popularity: number | null;
-  details: { [key: string]: string } | null; // For the details table
-  gallery: StrapiImage[] | null; // For the image gallery
+  attributes: {
+    name: string;
+    slug: string;
+    description: DescriptionBlock[] | null;
+    price: number;
+    productImage: { data: StrapiImage[] | null };
+    isFeatured: boolean | null;
+    popularity: number | null;
+    details: { [key: string]: string } | null;
+    gallery: { data: StrapiImage[] | null };
+    categories: { data: Category[] | null };
+  };
+}
+
+/**
+ * The structure for a Blog Post.
+ */
+export interface Post {
+  id: number;
+  attributes: {
+    title: string;
+    slug: string;
+    content: string;
+    createdAt: string;
+    coverImage: { data: StrapiImage | null };
+  };
+}
+
+/**
+ * The structure for a Portfolio Item.
+ */
+export interface PortfolioItem {
+  id: number;
+  attributes: {
+    title: string;
+    slug: string | null;
+    technologies: string;
+    coverImage: { data: StrapiImage | null };
+    description: DescriptionBlock[] | null;
+    liveUrl: string | null;
+    gallery: { data: StrapiImage[] | null };
+    features: { [key: string]: string } | null;
+  };
+}
+
+/**
+ * The structure for a Comment from the custom comment system.
+ */
+export interface Comment {
+  id: number;
+  attributes: {
+    content: string;
+    createdAt: string;
+    author: {
+      data: {
+        id: number;
+        attributes: {
+          username: string;
+        };
+      };
+    };
+  };
 }

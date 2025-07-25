@@ -1,13 +1,18 @@
 import { getPortfolioItemBySlug, getPortfolioItems } from "@/lib/api";
 import { notFound } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Remarkable } from "remarkable";
-import type { DescriptionBlock } from "@/lib/definitions";
+import type { DescriptionBlock, PortfolioItem } from "@/lib/definitions";
 import Gallery from "@/components/portfolio/Gallery";
-import Link from "next/link";
 
-// A reusable component for skill badges
+/**
+ * @file src/app/(site)/portfolio/[slug]/page.tsx
+ * @description Renders a single, dynamic portfolio project page with full details.
+ */
+
+// Helper component for skill badges
 function SkillBadge({ skill }: { skill: string }) {
   return (
     <span className="bg-gray-700 text-gray-300 text-sm font-medium me-2 px-3 py-1 rounded-full">
@@ -21,10 +26,10 @@ function richTextToString(description: DescriptionBlock[] | null): string {
   if (!description) return "";
   return description
     .map((block) => block.children.map((child) => child.text).join(""))
-    .join("\n\n"); // Join paragraphs with double newlines
+    .join("\n\n");
 }
 
-// Helper function to render the features table
+// Helper component for the features table
 function FeaturesTable({
   features,
 }: {
@@ -41,7 +46,7 @@ function FeaturesTable({
         {entries.map(([key, value], index) => (
           <div
             key={key}
-            className={`flex justify-between p-4 ${
+            className={`flex justify-between p-4 text-sm ${
               index < entries.length - 1 ? "border-b border-gray-700" : ""
             }`}
           >
@@ -60,35 +65,35 @@ export default async function PortfolioItemPage({
   params: { slug: string };
 }) {
   const { slug } = await params;
-  const item = await getPortfolioItemBySlug(slug);
+  const itemData = await getPortfolioItemBySlug(slug);
 
-  if (!item) {
+  if (!itemData) {
     notFound();
   }
 
-  // --- Logic for Next/Previous Project ---
+  const item = itemData.attributes;
+
   const allItems = await getPortfolioItems();
-  const currentIndex = allItems.findIndex((p) => p.id === item.id);
+  const currentIndex = allItems.findIndex((p) => p.id === itemData.id);
   const prevItem = allItems[currentIndex - 1];
   const nextItem = allItems[currentIndex + 1];
-  // ---
 
   const STRAPI_URL =
     process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
-  const imageUrl = item.coverImage?.url
-    ? `${STRAPI_URL}${item.coverImage.url}`
+  const imageUrl = item.coverImage?.data?.attributes?.url
+    ? `${STRAPI_URL}${item.coverImage.data.attributes.url}`
     : "https://placehold.co/1200x600/1f2937/f97616?text=Project+Image";
 
   const descriptionString = richTextToString(item.description);
   const md = new Remarkable();
   const htmlDescription = descriptionString ? md.render(descriptionString) : "";
 
-  const galleryImages = item.gallery;
+  const galleryImages = item.gallery?.data;
 
   return (
     <div className="container mx-auto px-6 py-12">
       <article className="max-w-4xl mx-auto">
-        {/* Header */}
+        {/* Header Section */}
         <div className="text-center mb-12">
           <h1 className="text-5xl font-extrabold text-white">{item.title}</h1>
           <div className="flex flex-wrap gap-2 justify-center mt-6">
@@ -110,7 +115,7 @@ export default async function PortfolioItemPage({
           />
         </div>
 
-        {/* Project Description & Gallery */}
+        {/* Main Content: Description, Features, and Gallery */}
         <div className="prose prose-invert lg:prose-xl max-w-none text-right leading-loose">
           {htmlDescription && (
             <div dangerouslySetInnerHTML={{ __html: htmlDescription }} />
@@ -128,21 +133,44 @@ export default async function PortfolioItemPage({
           )}
         </div>
 
-        {/* Live Site Button */}
-        {item.liveUrl && (
-          <div className="text-center mt-12">
-            <Button href={item.liveUrl} variant="primary" size="lg">
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center mt-12">
+          {item.liveUrl && (
+            <Button
+              href={item.liveUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              variant="primary"
+              size="lg"
+            >
               مشاهده وب‌سایت پروژه
             </Button>
-          </div>
-        )}
-        
+          )}
+          <a
+            href="/Amirali-Sharifi-Asl-Resume.pdf"
+            download="Amirali-Sharifi-Asl-Resume.pdf"
+            className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-400 bg-transparent border border-gray-500 text-gray-200 hover:bg-gray-700 h-11 px-8"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+              className="w-5 h-5 ml-2"
+            >
+              <path d="M10.75 2.75a.75.75 0 0 0-1.5 0v8.614L6.295 8.235a.75.75 0 1 0-1.09 1.03l4.25 4.5a.75.75 0 0 0 1.09 0l4.25-4.5a.75.75 0 0 0-1.09-1.03l-2.955 3.129V2.75Z" />
+              <path d="M3.5 12.75a.75.75 0 0 0-1.5 0v2.5A2.75 2.75 0 0 0 4.75 18h10.5A2.75 2.75 0 0 0 18 15.25v-2.5a.75.75 0 0 0-1.5 0v2.5c0 .69-.56 1.25-1.25 1.25H4.75c-.69 0-1.25-.56-1.25-1.25v-2.5Z" />
+            </svg>
+            دانلود رزومه
+          </a>
+        </div>
       </article>
-      <nav className="flex justify-between items-center mt-24 border-t border-gray-700 pt-8">
+
+      {/* Next/Previous Project Navigation */}
+      <nav className="flex justify-between items-center mt-24 border-t border-gray-700 pt-8 max-w-4xl mx-auto">
         <div>
           {prevItem && (
             <Link
-              href={`/portfolio/${prevItem.slug || prevItem.id}`}
+              href={`/portfolio/${prevItem.attributes.slug || prevItem.id}`}
               className="flex items-center gap-x-2 text-gray-400 hover:text-orange-400 transition-colors"
             >
               <svg
@@ -164,7 +192,7 @@ export default async function PortfolioItemPage({
         <div>
           {nextItem && (
             <Link
-              href={`/portfolio/${nextItem.slug || nextItem.id}`}
+              href={`/portfolio/${nextItem.attributes.slug || nextItem.id}`}
               className="flex items-center gap-x-2 text-gray-400 hover:text-orange-400 transition-colors"
             >
               <span>پروژه بعدی</span>

@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ProductsPage() {
-  // 1. Fetch initial data on the server
+
   const initialProducts = await getProducts();
 
   return (

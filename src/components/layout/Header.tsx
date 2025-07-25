@@ -3,31 +3,49 @@ import HeaderClient from "./HeaderClient";
 import { getCategories } from "@/lib/api";
 import type { Category } from "@/lib/definitions";
 
-// This is the fully corrected function to build the menu tree
-const buildMenuTree = (categories: Category[], parentId: number | null = null, basePath: string = '/products'): unknown[] => {
-  return categories
-    .filter(cat => {
-        // Correctly checks the flattened 'category' field for the parent ID
-        const parent = cat.category;
-        return (parent ? parent.id : null) === parentId;
-    })
-    .map(cat => {
-      // Correctly accesses the slug from the flattened object
-      const newPath = `${basePath}/${cat.slug}`;
-      return {
-        // Correctly accesses the name from the flattened object
-        title: cat.name,
-        link: newPath,
-        submenu: buildMenuTree(categories, cat.id, newPath),
-      }
-    });
+/**
+ * A helper function that takes a flat list of categories from Strapi
+ * and recursively builds a nested tree structure for the menu.
+ */
+const buildMenuTree = (
+  categories: Category[],
+  parentId: number | null = null,
+  basePath: string = "/products"
+): unknown[] => {
+  const children = categories.filter((cat) => {
+    const parent = cat.attributes.parent?.data;
+    return (parent ? parent.id : null) === parentId;
+  });
+
+  if (children.length === 0) {
+    return [];
+  }
+
+  return children.map((cat) => {
+    const newPath = `${basePath}/${cat.attributes.slug}`;
+    return {
+      title: cat.attributes.name,
+      link: newPath,
+      // Recursively call the function to find children of the current category
+      submenu: buildMenuTree(categories, cat.id, newPath),
+    };
+  });
 };
 
 export default async function Header() {
   const session = await getServerSession();
   const allCategories = await getCategories();
 
-  const storeSubmenu = buildMenuTree(allCategories, null, '/products');
+  // Build the nested submenu for the store by finding top-level categories (those with no parent)
+  const storeSubmenu = buildMenuTree(allCategories, null);
+
+  // This is the static part of your menu
+  const staticMenu = [
+    { title: "بلاگ", link: "/blog" },
+    { title: "نمونه کارها", link: "/portfolio" },
+    { title: "تماس با ما", link: "/contact" },
+    { title: "درباره ما", link: "/about" },
+  ];
 
   const menu = [
     { title: "خانه", link: "/" },
@@ -36,10 +54,7 @@ export default async function Header() {
       link: "/products",
       submenu: storeSubmenu,
     },
-    { title: "بلاگ", link: "/blog" },
-    { title: "نمونه کارها", link: "/portfolio" },
-    { title: "تماس با ما", link: "/contact" },
-    { title: "درباره ما", link: "/about" },
+    ...staticMenu,
   ];
 
   return <HeaderClient session={session} menu={menu} />;
