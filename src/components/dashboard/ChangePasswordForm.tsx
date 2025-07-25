@@ -24,6 +24,14 @@ export default function ChangePasswordForm() {
       return;
     }
 
+    const payload = {
+      currentPassword,
+      newPassword,
+      confirmNewPassword,
+    };
+
+    console.log("--- [Frontend Form] Sending payload to API route:", payload);
+
     const res = await fetch("/api/auth/change-password", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -35,14 +43,15 @@ export default function ChangePasswordForm() {
     });
 
     if (res.ok) {
-      setMessage("رمز عبور با موفقیت تغییر کرد. لطفاً دوباره وارد شوید.");
-      // Automatically sign the user out after 2 seconds
+      setMessage(
+        "رمز عبور با موفقیت تغییر کرد. برای امنیت بیشتر، لطفاً دوباره وارد شوید."
+      );
       setTimeout(() => {
         signOut({ callbackUrl: "/login" });
-      }, 2000);
+      }, 3000);
     } else {
       const data = await res.json();
-      setError(data.error || "خطایی رخ داد. لطفاً دوباره تلاش کنید.");
+      setError(data.error || "رمز عبور فعلی نامعتبر است یا خطایی رخ داده.");
     }
     setIsLoading(false);
   };
@@ -51,7 +60,7 @@ export default function ChangePasswordForm() {
     "w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-gray-200 text-right";
 
   return (
-    <div className="bg-gray-800 rounded-lg p-6 mt-8">
+    <div className="bg-gray-800 rounded-lg p-6 sm:p-8 mt-8">
       <h2 className="text-2xl font-bold mb-6 text-white text-right">
         تغییر رمز عبور
       </h2>

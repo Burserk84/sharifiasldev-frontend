@@ -1,7 +1,6 @@
 import NextAuth, { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-// 1. Define and export your auth configuration object
 export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
@@ -13,8 +12,9 @@ export const authOptions: AuthOptions = {
       async authorize(credentials) {
         if (!credentials) return null;
         try {
+          // Populate all the user relations we need in the session
           const res = await fetch(
-            `${process.env.NEXT_PUBLIC_STRAPI_URL}/api/auth/local`,
+            `${process.env.NEXT_PUBLIC_STRAPI_URL}/api/auth/local?populate=profilePicture,coverImage`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -24,16 +24,10 @@ export const authOptions: AuthOptions = {
               }),
             }
           );
+
           const data = await res.json();
           if (data.user && data.jwt) {
-            return {
-              id: data.user.id,
-              username: data.user.username,
-              email: data.user.email,
-              jwt: data.jwt,
-              firstName: data.user.firstName,
-              lastName: data.user.lastName,
-            };
+            return { ...data.user, jwt: data.jwt };
           }
           return null;
         } catch (error) {
@@ -44,26 +38,37 @@ export const authOptions: AuthOptions = {
     }),
   ],
   callbacks: {
-    // This callback runs when the JWT is created
-    async jwt({ token, user }) {
-      // On the initial sign-in, the 'user' object from the 'authorize' function is available
+    // This callback runs when the JWT is created or updated
+    async jwt({ token, user, trigger, session }) {
       if (user) {
+        // On initial sign-in
         token.id = user.id;
         token.username = user.username;
-        token.jwt = user.jwt;
         token.firstName = user.firstName;
         token.lastName = user.lastName;
+        token.jwt = user.jwt;
+        token.profilePicture = user.profilePicture;
+        token.coverImage = user.coverImage;
+      }
+      if (trigger === "update" && session) {
+        // When client calls `update()`
+        token.username = session.username;
+        token.firstName = session.firstName;
+        token.lastName = session.lastName;
+        token.email = session.email;
       }
       return token;
     },
     // This callback runs when the session is accessed
     async session({ session, token }) {
-      // Pass the properties from the token to the final session object
       if (session.user) {
         session.user.id = token.id;
         session.user.username = token.username;
         session.user.firstName = token.firstName;
         session.user.lastName = token.lastName;
+        session.user.email = token.email;
+        session.user.profilePicture = token.profilePicture;
+        session.user.coverImage = token.coverImage;
       }
       session.jwt = token.jwt;
       return session;
@@ -73,7 +78,5 @@ export const authOptions: AuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
 };
 
-// 2. Use the configuration to create the handler
 const handler = NextAuth(authOptions);
-
 export { handler as GET, handler as POST };
