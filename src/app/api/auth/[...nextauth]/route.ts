@@ -12,9 +12,8 @@ export const authOptions: AuthOptions = {
       async authorize(credentials) {
         if (!credentials) return null;
         try {
-          // Populate all the user relations we need in the session
           const res = await fetch(
-            `${process.env.NEXT_PUBLIC_STRAPI_URL}/api/auth/local?populate=profilePicture,coverImage`,
+            `${process.env.NEXT_PUBLIC_STRAPI_URL}/api/auth/local`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -24,7 +23,6 @@ export const authOptions: AuthOptions = {
               }),
             }
           );
-
           const data = await res.json();
           if (data.user && data.jwt) {
             return { ...data.user, jwt: data.jwt };
@@ -38,35 +36,42 @@ export const authOptions: AuthOptions = {
     }),
   ],
   callbacks: {
-    // This callback runs when the JWT is created or updated
-    async jwt({ token, user, trigger, session }) {
+    async jwt({ token, user }) {
       if (user) {
-        // On initial sign-in
-        token.id = user.id;
-        token.username = user.username;
-        token.firstName = user.firstName;
-        token.lastName = user.lastName;
+        // On initial sign-in, we only get basic info and the JWT
         token.jwt = user.jwt;
-        token.profilePicture = user.profilePicture;
-        token.coverImage = user.coverImage;
-      }
-      if (trigger === "update" && session) {
-        // When client calls `update()`
-        token.username = session.username;
-        token.firstName = session.firstName;
-        token.lastName = session.lastName;
-        token.email = session.email;
+
+        // Make a second API call to get the user's full profile with images
+        try {
+          const profileRes = await fetch(
+            `${process.env.NEXT_PUBLIC_STRAPI_URL}/api/users/me?populate=profilePicture,coverImage`,
+            {
+              headers: { Authorization: `Bearer ${user.jwt}` },
+            }
+          );
+          const profileData = await profileRes.json();
+
+          // Add all profile data to the token
+          token.id = profileData.id;
+          token.username = profileData.username;
+          token.email = profileData.email;
+          token.firstName = profileData.firstName;
+          token.lastName = profileData.lastName;
+          token.profilePicture = profileData.profilePicture;
+          token.coverImage = profileData.coverImage;
+        } catch (error) {
+          console.error("Failed to fetch full user profile:", error);
+        }
       }
       return token;
     },
-    // This callback runs when the session is accessed
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id;
         session.user.username = token.username;
+        session.user.email = token.email;
         session.user.firstName = token.firstName;
         session.user.lastName = token.lastName;
-        session.user.email = token.email;
         session.user.profilePicture = token.profilePicture;
         session.user.coverImage = token.coverImage;
       }

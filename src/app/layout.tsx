@@ -1,4 +1,4 @@
-import { Providers } from "@/app/providers"; // 1. Import the provider
+import { Providers } from "@/app/providers";
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { Vazirmatn } from "next/font/google";
@@ -24,9 +24,9 @@ export default function RootLayout({
       >
         {/* 2. Wrap the contents of your body with the Providers component */}
         <Providers>
-          <Header />
-          <main className="flex-grow">{children}</main>
-          <Footer />
+            <Header />
+            <main className="flex-grow">{children}</main>
+            <Footer />
         </Providers>
       </body>
     </html>

@@ -6,6 +6,7 @@ import { Session } from "next-auth";
 import DropdownMenu from "./DropdownMenu";
 import Search from "./Search";
 import MobileMenu from "./MobileMenu";
+import { usePathname } from "next/navigation";
 
 interface HeaderClientProps {
   session: Session | null;
@@ -13,6 +14,7 @@ interface HeaderClientProps {
 }
 
 export default function HeaderClient({ session, menu }: HeaderClientProps) {
+  const pathname = usePathname();
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
@@ -60,7 +62,9 @@ export default function HeaderClient({ session, menu }: HeaderClientProps) {
               ) : (
                 <Link
                   href={item.link}
-                  className="hover:text-orange-400 transition-colors"
+                  className={`transition-colors hover:text-orange-400 ${
+                    pathname === item.link ? "text-orange-400 font-bold" : ""
+                  }`}
                 >
                   {item.title}
                 </Link>

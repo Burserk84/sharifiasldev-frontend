@@ -44,8 +44,9 @@ export default function ChangePasswordForm() {
 
     if (res.ok) {
       setMessage(
-        "رمز عبور با موفقیت تغییر کرد. برای امنیت بیشتر، لطفاً دوباره وارد شوید."
+        "رمز عبور با موفقیت تغییر کرد. لطفاً از حساب خود خارج شده و با رمز جدید وارد شوید."
       );
+
       setTimeout(() => {
         signOut({ callbackUrl: "/login" });
       }, 3000);

@@ -6,14 +6,18 @@ import { useState, useEffect } from "react";
 import SignOutButton from "@/components/auth/SignOutButton";
 import UserProfile from "@/components/dashboard/UserProfile";
 import ChangePasswordForm from "@/components/dashboard/ChangePasswordForm";
-import DashboardHeader from "@/components/dashboard/DashboardHeader"; // Import the new header
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import PurchasedProducts from "@/components/dashboard/PurchasedProducts";
+import SupportPage from "../dashboard/support/page";
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
+  console.log("Dashboard Session Object:", session);
+
   // State to manage which view is active
-  const [activeView, setActiveView] = useState("overview");
+  const [activeView, setActiveView] = useState("purchases");
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -37,16 +41,8 @@ export default function DashboardPage() {
           {/* Conditionally render the correct component based on the active view */}
           {activeView === "profile" && <UserProfile />}
           {activeView === "password" && <ChangePasswordForm />}
-          {activeView === "overview" && (
-            <div className="bg-gray-800 rounded-lg p-6 mt-8">
-              <h2 className="text-2xl font-bold mb-6 text-white text-right">
-                محصولات خریداری شده
-              </h2>
-              <p className="text-gray-400 text-right">
-                شما هنوز هیچ محصولی خریداری نکرده‌اید.
-              </p>
-            </div>
-          )}
+          {activeView === "purchases" && <PurchasedProducts />}
+          {activeView === "support" && <SupportPage />}
 
           <div className="mt-8 text-center">
             <SignOutButton />

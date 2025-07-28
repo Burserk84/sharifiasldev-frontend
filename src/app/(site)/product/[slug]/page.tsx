@@ -69,11 +69,17 @@ export default async function SingleProductPage({
     notFound();
   }
 
-  // --- KEY CHANGE HERE ---
-  // The actual product data is inside the 'attributes' object
   const product = productData.attributes;
 
-  const { name, price, description, productImage, gallery, details } = product;
+  const {
+    name,
+    price,
+    description,
+    productImage,
+    gallery,
+    details,
+    paymentLink,
+  } = product;
 
   const STRAPI_URL =
     process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
@@ -128,11 +134,19 @@ export default async function SingleProductPage({
             {formattedPrice}
           </p>
 
-          <div className="mt-8">
-            <Button size="lg" className="w-full">
-              افزودن به سبد خرید
-            </Button>
-          </div>
+          {paymentLink && (
+            <div className="mt-8">
+              <Button
+                href={paymentLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                size="lg"
+                className="w-full"
+              >
+                خرید و دانلود محصول
+              </Button>
+            </div>
+          )}
 
           <DetailsTable details={details} />
 

@@ -31,13 +31,14 @@ export default function UpdateProfileForm() {
     const res = await fetch("/api/users/me", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ username, email, firstName, lastName }),
+      body: JSON.stringify({ username, firstName, lastName, email }),
     });
 
     if (res.ok) {
-      // This tells NextAuth to refetch the session with all new data
-      await update({ username, email, firstName, lastName });
-      setMessage("پروفایل با موفقیت به‌روزرسانی شد!");
+      // Show a success message telling the user to re-login
+      setMessage(
+        "پروفایل با موفقیت به‌روزرسانی شد! برای مشاهده تغییرات، لطفاً از حساب خود خارج شده و دوباره وارد شوید."
+      );
     } else {
       setMessage("خطایی رخ داد. لطفاً دوباره تلاش کنید.");
     }

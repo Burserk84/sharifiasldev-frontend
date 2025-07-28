@@ -55,6 +55,7 @@ export interface Product {
     details: { [key: string]: string } | null;
     gallery: { data: StrapiImage[] | null };
     categories: { data: Category[] | null };
+    paymentLink: string | null;
   };
 }
 

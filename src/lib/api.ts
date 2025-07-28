@@ -185,3 +185,27 @@ export async function getUserComments(jwt: string): Promise<Comment[]> {
   // The comments plugin returns a flat array, not a {data: []} object
   return response || [];
 }
+
+/**
+ * Fetches all orders belonging to a specific user ID.
+ * @param {number} userId The ID of the user.
+ * @returns {Promise<any[]>} An array of the user's orders.
+ */
+export async function getUserOrders(userId: number): Promise<unknown[]> {
+  const STRAPI_URL =
+    process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
+
+  // Fetch orders filtered by the provided user ID
+  const ordersRes = await fetch(
+    `${STRAPI_URL}/api/orders?filters[user][id][$eq]=${userId}&populate=products.productImage`,
+    { cache: "no-store" } // Ensure fresh data is always fetched
+  );
+
+  if (!ordersRes.ok) {
+    console.error("Failed to fetch orders from Strapi");
+    return [];
+  }
+
+  const ordersData = await ordersRes.json();
+  return ordersData.data;
+}
