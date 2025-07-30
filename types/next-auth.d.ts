@@ -3,7 +3,6 @@ import "next-auth/jwt";
 import { StrapiImage } from "@/lib/definitions";
 
 declare module "next-auth" {
-  // Extends the User object returned from authorize
   interface User {
     id: number;
     username: string;
@@ -14,8 +13,6 @@ declare module "next-auth" {
     coverImage?: StrapiImage | null;
     jwt: string;
   }
-
-  // Extends the session object available to the client
   interface Session {
     user: {
       id: number;
@@ -29,9 +26,7 @@ declare module "next-auth" {
     jwt: string;
   }
 }
-
 declare module "next-auth/jwt" {
-  // Extends the token object used in callbacks
   interface JWT {
     id: number;
     username: string;

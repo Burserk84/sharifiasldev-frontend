@@ -29,7 +29,6 @@ export const authOptions: AuthOptions = {
           }
           return null;
         } catch (error) {
-          console.error("Authorize Error:", error);
           return null;
         }
       },
@@ -38,10 +37,7 @@ export const authOptions: AuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        // On initial sign-in, we only get basic info and the JWT
         token.jwt = user.jwt;
-
-        // Make a second API call to get the user's full profile with images
         try {
           const profileRes = await fetch(
             `${process.env.NEXT_PUBLIC_STRAPI_URL}/api/users/me?populate=profilePicture,coverImage`,
@@ -50,8 +46,6 @@ export const authOptions: AuthOptions = {
             }
           );
           const profileData = await profileRes.json();
-
-          // Add all profile data to the token
           token.id = profileData.id;
           token.username = profileData.username;
           token.email = profileData.email;
@@ -60,7 +54,7 @@ export const authOptions: AuthOptions = {
           token.profilePicture = profileData.profilePicture;
           token.coverImage = profileData.coverImage;
         } catch (error) {
-          console.error("Failed to fetch full user profile:", error);
+          return null;
         }
       }
       return token;

@@ -4,6 +4,7 @@ import type {
   Product,
   Post,
   Comment,
+  Ticket,
 } from "./definitions";
 
 /**
@@ -208,4 +209,30 @@ export async function getUserOrders(userId: number): Promise<unknown[]> {
 
   const ordersData = await ordersRes.json();
   return ordersData.data;
+}
+
+/**
+ * Fetches all tickets belonging to the currently authenticated user
+ * by calling our custom Strapi endpoint.
+ * @param {string} jwt The user's Strapi JWT.
+ * @returns {Promise<any[]>} An array of the user's tickets.
+ */
+export async function getUserTickets(jwt: string): Promise<unknown[]> {
+  const STRAPI_URL =
+    process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
+
+  // Call our new custom endpoint
+  const res = await fetch(`${STRAPI_URL}/api/tickets/me`, {
+    headers: { Authorization: `Bearer ${jwt}` },
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    console.error("Failed to fetch user tickets from custom endpoint");
+    return [];
+  }
+  const responseData = await res.json();
+  console.log(responseData);
+  // The custom controller already returns the final data array
+  return responseData.data;
 }
