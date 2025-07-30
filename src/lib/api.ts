@@ -177,33 +177,23 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
 }
 
 /**
- * Fetches all comments made by the currently logged-in user.
- */
-export async function getUserComments(jwt: string): Promise<Comment[]> {
-  const response = await fetchAPI("/comments/user/me", {
-    headers: { Authorization: `Bearer ${jwt}` },
-  });
-  // The comments plugin returns a flat array, not a {data: []} object
-  return response || [];
-}
-
-/**
- * Fetches all orders belonging to a specific user ID.
- * @param {number} userId The ID of the user.
+ * Fetches all orders for the logged-in user using their JWT.
+ * @param {string} jwt The user's JSON Web Token.
  * @returns {Promise<any[]>} An array of the user's orders.
  */
-export async function getUserOrders(userId: number): Promise<unknown[]> {
-  const STRAPI_URL =
-    process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
+export async function getUserOrders(jwt: string): Promise<unknown[]> {
+  const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL;
 
-  // Fetch orders filtered by the provided user ID
-  const ordersRes = await fetch(
-    `${STRAPI_URL}/api/orders?filters[user][id][$eq]=${userId}&populate=products.productImage`,
-    { cache: "no-store" } // Ensure fresh data is always fetched
-  );
+  // Fetch from the new, secure endpoint
+  const ordersRes = await fetch(`${STRAPI_URL}/api/orders/me`, {
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+    },
+    cache: "no-store",
+  });
 
   if (!ordersRes.ok) {
-    console.error("Failed to fetch orders from Strapi");
+    console.error("Failed to fetch orders from Strapi /api/orders/me");
     return [];
   }
 
