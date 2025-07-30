@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/Button";
 
 export default function UpdateProfileForm() {
-  const { data: session, update } = useSession();
+  const { data: session } = useSession();
 
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");

@@ -27,6 +27,17 @@ export interface DescriptionBlock {
 }
 
 /**
+ * A minimal interface for a User, often used in relations.
+ */
+export interface User {
+  id: number;
+  attributes: {
+    username: string;
+    email?: string; // Optional as it may not always be populated
+  };
+}
+
+/**
  * The structure for a Category, including parent/child relations for nesting.
  */
 export interface Category {
@@ -50,6 +61,7 @@ export interface Product {
     description: DescriptionBlock[] | null;
     price: number;
     productImage: { data: StrapiImage[] | null };
+    downloadableFile?: { data: StrapiImage | null }; // Added for downloads
     isFeatured: boolean | null;
     popularity: number | null;
     details: { [key: string]: string } | null;
@@ -98,13 +110,46 @@ export interface Comment {
   attributes: {
     content: string;
     createdAt: string;
-    author: {
-      data: {
-        id: number;
-        attributes: {
-          username: string;
-        };
-      };
-    };
+    author: { data: User | null }; // Using the shared User type
+  };
+}
+
+// --- NEWLY ADDED TYPES ---
+
+/**
+ * The structure for a single message within a support ticket.
+ */
+export interface TicketMessage {
+  id: number;
+  message: string;
+  isResponse: boolean;
+  sentAt: string;
+  author: { data: User | null };
+}
+
+/**
+ * The structure for a support Ticket.
+ */
+export interface Ticket {
+  id: number;
+  attributes: {
+    title: string;
+    status: string;
+    createdAt: string;
+    messages: TicketMessage[];
+  };
+}
+
+/**
+ * The structure for a user's Order.
+ */
+export interface Order {
+  id: number;
+  attributes: {
+    orderId: string;
+    status: string;
+    createdAt: string;
+    user: { data: User | null };
+    products: { data: Product[] };
   };
 }

@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, use, ReactNode } from "react";
 import { Button } from "@/components/ui/Button";
 import { useSession } from "next-auth/react";
+import { Ticket, TicketMessage } from "@/lib/definitions";
 
 export default function SingleTicketPage({
   params,
@@ -12,7 +13,7 @@ export default function SingleTicketPage({
   const { ticketId } = use(params);
 
   const { data: session } = useSession();
-  const [ticket, setTicket] = useState<any>(null);
+  const [ticket, setTicket] = useState<Ticket | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [newMessage, setNewMessage] = useState("");
   const [isReplying, setIsReplying] = useState(false);
@@ -62,7 +63,7 @@ export default function SingleTicketPage({
           ایجاد شده در: {new Date(createdAt).toLocaleDateString("fa-IR")}
         </p>
         <div className="space-y-6">
-          {messages.map((msg: any, index: number) => {
+          {messages.map((msg: TicketMessage, index: number) => {
             const author = msg.author?.data;
             if (!author) return null;
 

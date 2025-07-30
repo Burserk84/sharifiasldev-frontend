@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
 import { Remarkable } from "remarkable";
-import type { DescriptionBlock, PortfolioItem } from "@/lib/definitions";
+import type { DescriptionBlock } from "@/lib/definitions";
 import Gallery from "@/components/portfolio/Gallery";
 
 /**

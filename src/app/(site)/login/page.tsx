@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 
@@ -11,7 +10,6 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false); // Add a loading state
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -34,7 +32,7 @@ export default function LoginPage() {
         setError("ایمیل یا رمز عبور نامعتبر است.");
       }
     } catch (error) {
-      setError("خطایی رخ داد. لطفاً دوباره تلاش کنید.");
+      setError("خطایی رخ داد. لطفاً دوباره تلاش کنید.\n" + error);
     } finally {
       setIsLoading(false);
     }

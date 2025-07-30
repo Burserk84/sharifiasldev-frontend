@@ -1,5 +1,4 @@
 import { getPostBySlug, getPosts } from "@/lib/api";
-import type { Post } from "@/lib/definitions";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { Remarkable } from "remarkable";

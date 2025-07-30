@@ -29,7 +29,7 @@ export const authOptions: AuthOptions = {
           }
           return null;
         } catch (error) {
-          return null;
+          return error;
         }
       },
     }),
@@ -54,7 +54,7 @@ export const authOptions: AuthOptions = {
           token.profilePicture = profileData.profilePicture;
           token.coverImage = profileData.coverImage;
         } catch (error) {
-          return null;
+          return error;
         }
       }
       return token;

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { Order, Product } from "@/lib/definitions";
 
 const ImagePlaceholder = () => (
   <div className="w-full h-full bg-gray-600 flex items-center justify-center">
@@ -24,7 +24,7 @@ const ImagePlaceholder = () => (
 );
 
 export default function PurchasedProducts() {
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL;
 
@@ -91,7 +91,7 @@ export default function PurchasedProducts() {
                   {getStatusChip(order.attributes.status)}
                 </div>
                 <div className="space-y-3">
-                  {order.attributes.products.data.map((product: any) => {
+                  {order.attributes.products.data.map((product: Product) => {
                     const imageUrl =
                       product.attributes.productImage?.data?.[0]?.attributes
                         ?.url;

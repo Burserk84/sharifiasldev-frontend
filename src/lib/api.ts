@@ -1,11 +1,4 @@
-import type {
-  Category,
-  PortfolioItem,
-  Product,
-  Post,
-  Comment,
-  Ticket,
-} from "./definitions";
+import type { Category, PortfolioItem, Product, Post } from "./definitions";
 
 /**
  * @file src/lib/api.ts
