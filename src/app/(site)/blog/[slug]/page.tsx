@@ -12,7 +12,7 @@ export default async function PostPage({
 }: {
   params: { slug: string };
 }) {
-  const { slug } = await params;
+  const { slug } = params;
   const postData = await getPostBySlug(slug);
 
   if (!postData) {

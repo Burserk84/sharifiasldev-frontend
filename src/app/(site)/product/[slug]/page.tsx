@@ -62,7 +62,7 @@ export default async function SingleProductPage({
 }: {
   params: { slug: string };
 }) {
-  const { slug } = await params;
+  const { slug } = params;
   const productData = await getProductBySlug(slug);
 
   if (!productData) {
