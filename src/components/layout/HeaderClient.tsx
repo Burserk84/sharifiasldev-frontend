@@ -57,7 +57,7 @@ export default function HeaderClient({ session, menu }: HeaderClientProps) {
                 <DropdownMenu
                   title={item.title}
                   submenu={item.submenu}
-                  link={item.link} // Pass the link prop
+                  link={item.link}
                 />
               ) : (
                 <Link
@@ -81,13 +81,13 @@ export default function HeaderClient({ session, menu }: HeaderClientProps) {
           {session ? (
             <Link
               href="/dashboard"
-              className="hidden sm:flex items-center gap-x-2 text-sm"
+              className="flex items-center gap-x-2 text-sm"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 20 20"
                 fill="currentColor"
-                className="w-5 h-5"
+                className="w-6 h-6"
               >
                 <path
                   fillRule="evenodd"
@@ -95,7 +95,7 @@ export default function HeaderClient({ session, menu }: HeaderClientProps) {
                   clipRule="evenodd"
                 />
               </svg>
-              <span>پنل کاربری</span>
+              <span className="hidden sm:flex">پنل کاربری</span>
             </Link>
           ) : (
             <Link
