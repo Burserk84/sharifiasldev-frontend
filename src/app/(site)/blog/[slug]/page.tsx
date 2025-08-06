@@ -1,18 +1,17 @@
 import { getPostBySlug, getPosts } from "@/lib/api";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { Remarkable } from "remarkable";
-import * as cheerio from "cheerio";
 import slugify from "slugify";
 import Sidebar from "@/components/blog/Sidebar";
 import PostCard from "@/components/blog/PostCard";
+import ContentRenderer from "@/components/blog/ContentRenderer";
 
 export default async function PostPage({
   params,
 }: {
   params: { slug: string };
 }) {
-  const { slug } = params;
+  const { slug } = await params;
   const postData = await getPostBySlug(slug);
 
   if (!postData) {
@@ -20,22 +19,18 @@ export default async function PostPage({
   }
   const post = postData.attributes;
 
-  const md = new Remarkable();
-  const htmlContent = post.content ? md.render(post.content) : "";
+  const toc = [];
+  const contentWithIds: BlocksContent =
+    post.content?.map((block) => {
+      if (block.type === "heading") {
+        const text = block.children.map((child) => child.text).join("");
+        const id = slugify(text, { lower: true, strict: true });
+        toc.push({ id, text, level: block.level });
+        return { ...block, id };
+      }
+      return block;
+    }) || [];
 
-  const $ = cheerio.load(htmlContent);
-  const headings = $("h2, h3");
-
-  const toc = headings
-    .map((i, el) => {
-      const text = $(el).text();
-      const id = slugify(text, { lower: true, strict: true });
-      $(el).attr("id", id);
-      return { id, text, level: parseInt(el.name.substring(1)) };
-    })
-    .get();
-
-  const finalHtmlContent = $.html();
   const allPosts = await getPosts();
   const relatedPosts = allPosts.filter((p) => p.id !== postData.id).slice(0, 3);
   const STRAPI_URL =
@@ -68,10 +63,10 @@ export default async function PostPage({
                 />
               </div>
             )}
-            <div
-              className="prose prose-invert lg:prose-xl max-w-none text-right leading-loose"
-              dangerouslySetInnerHTML={{ __html: finalHtmlContent }}
-            />
+            {/* ✨ 3. Use the BlocksRenderer with custom components for headings */}
+            <div className="prose prose-invert lg:prose-xl max-w-none text-right leading-loose">
+              <ContentRenderer content={contentWithIds} />
+            </div>
           </article>
         </main>
         <aside className="lg:col-span-4">

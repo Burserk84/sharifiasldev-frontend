@@ -1,40 +1,52 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/Button";
-import { Remarkable } from "remarkable";
 import { getProductBySlug } from "@/lib/api";
 import ProductGallery from "@/components/products/ProductGallery";
+import type { Metadata } from "next";
+import { BlocksRenderer } from "@strapi/blocks-react-renderer";
 
-// Helper function to convert Strapi's Rich Text JSON to a string
-function richTextToString(description: unknown): string {
-  // If description is null or undefined, return an empty string
-  if (!description) {
-    return "";
+// Define the type for the page's props using our Product interface
+type Props = {
+  params: { slug: string };
+};
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const productData = await getProductBySlug(slug);
+
+  if (!productData) {
+    return {
+      title: "Product Not Found",
+    };
   }
-  // If it's already a string, just return it
-  if (typeof description === "string") {
-    return description;
-  }
-  // If it's an array (the expected format), process it
-  if (Array.isArray(description)) {
-    return description
-      .map((block) => block.children?.map((child) => child.text).join("") || "")
-      .join("\n\n");
-  }
-  // Fallback for any other unexpected format
-  return "";
+  const product = productData.attributes;
+
+  // Create a plain text version of the description for the meta tag
+  const plainTextDescription = product.description
+    ? product.description
+        .map(
+          (block) => block.children?.map((child) => child.text).join("") || ""
+        )
+        .join(" ")
+        .substring(0, 155) + "..."
+    : `اطلاعات بیشتر و دانلود محصول ${product.name} از شریف اصل Dev.`;
+
+  return {
+    title: `${product.name} | SharifiaslDev`,
+    description: plainTextDescription,
+  };
 }
 
 // A component for the details table
 function DetailsTable({
   details,
 }: {
-  details: { [key: string]: string } | null;
+  details: { [key: string]: string | string[] } | null;
 }) {
   if (!details) return null;
 
   const entries = Object.entries(details);
-
   if (entries.length === 0) return null;
 
   return (
@@ -43,13 +55,26 @@ function DetailsTable({
         {entries.map(([key, value], index) => (
           <div
             key={key}
-            className={`flex justify-between p-4 text-sm ${
+            className={`p-4 ${
               index < entries.length - 1 ? "border-b border-gray-700" : ""
             }`}
           >
-            <dt className="text-gray-400">{key}</dt>
-
-            <dd className="font-semibold text-white">{value}</dd>
+            <dt className="text-gray-400 text-sm">{key}</dt>
+            <dd className="font-semibold text-white mt-1">
+              {Array.isArray(value) ? (
+                <ul className="space-y-1 pt-1">
+                  {value.map((item, i) => (
+                    <li key={i} className="flex items-center gap-x-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-orange-400 flex-shrink-0"></span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                // Otherwise, just display the string value
+                value
+              )}
+            </dd>
           </div>
         ))}
       </div>
@@ -57,12 +82,8 @@ function DetailsTable({
   );
 }
 
-export default async function SingleProductPage({
-  params,
-}: {
-  params: { slug: string };
-}) {
-  const { slug } = params;
+export default async function SingleProductPage({ params }: Props) {
+  const { slug } = await params;
   const productData = await getProductBySlug(slug);
 
   if (!productData) {
@@ -70,7 +91,6 @@ export default async function SingleProductPage({
   }
 
   const product = productData.attributes;
-
   const {
     name,
     price,
@@ -81,8 +101,7 @@ export default async function SingleProductPage({
     paymentLink,
   } = product;
 
-  const STRAPI_URL =
-    process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
+  const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL;
   const mainImage = productImage?.data?.[0];
   const galleryImages = gallery?.data;
 
@@ -91,13 +110,8 @@ export default async function SingleProductPage({
     currency: "IRR",
     maximumFractionDigits: 0,
   })
-    .format(price * 10)
+    .format(price)
     .replace("ریال", "تومان");
-
-  const md = new Remarkable();
-  const htmlDescription = description
-    ? md.render(richTextToString(description))
-    : "";
 
   return (
     <div className="container mx-auto px-6 py-12">
@@ -150,15 +164,14 @@ export default async function SingleProductPage({
 
           <DetailsTable details={details} />
 
-          {htmlDescription && (
+          {description && (
             <div className="mt-8">
               <h2 className="text-2xl font-bold text-white mb-4">
                 توضیحات محصول
               </h2>
-              <div
-                className="prose prose-invert max-w-none text-right leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: htmlDescription }}
-              />
+              <div className="prose prose-invert max-w-none text-right leading-relaxed">
+                <BlocksRenderer content={description} />
+              </div>
             </div>
           )}
         </div>

@@ -3,9 +3,8 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/Button";
-import { Remarkable } from "remarkable";
-import type { DescriptionBlock } from "@/lib/definitions";
 import Gallery from "@/components/portfolio/Gallery";
+import { BlocksRenderer } from "@strapi/blocks-react-renderer";
 
 /**
  * @file src/app/(site)/portfolio/[slug]/page.tsx
@@ -19,14 +18,6 @@ function SkillBadge({ skill }: { skill: string }) {
       {skill}
     </span>
   );
-}
-
-// Helper function to convert Strapi's Rich Text JSON to a string
-function richTextToString(description: DescriptionBlock[] | null): string {
-  if (!description) return "";
-  return description
-    .map((block) => block.children.map((child) => child.text).join(""))
-    .join("\n\n");
 }
 
 // Helper component for the features table
@@ -84,10 +75,6 @@ export default async function PortfolioItemPage({
     ? `${STRAPI_URL}${item.coverImage.data.attributes.url}`
     : "https://placehold.co/1200x600/1f2937/f97616?text=Project+Image";
 
-  const descriptionString = richTextToString(item.description);
-  const md = new Remarkable();
-  const htmlDescription = descriptionString ? md.render(descriptionString) : "";
-
   const galleryImages = item.gallery?.data;
 
   return (
@@ -117,9 +104,7 @@ export default async function PortfolioItemPage({
 
         {/* Main Content: Description, Features, and Gallery */}
         <div className="prose prose-invert lg:prose-xl max-w-none text-right leading-loose">
-          {htmlDescription && (
-            <div dangerouslySetInnerHTML={{ __html: htmlDescription }} />
-          )}
+          {item.description && <BlocksRenderer content={item.description} />}
 
           <FeaturesTable features={item.features} />
 

@@ -15,6 +15,9 @@ export default function ProductSlider({ products }: { products: Product[] }) {
   const [prevBtnDisabled, setPrevBtnDisabled] = useState(true);
   const [nextBtnDisabled, setNextBtnDisabled] = useState(true);
 
+  const STRAPI_URL =
+    process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
+
   const scrollPrev = useCallback(
     () => emblaApi && emblaApi.scrollPrev(),
     [emblaApi]
@@ -41,13 +44,17 @@ export default function ProductSlider({ products }: { products: Product[] }) {
       <div className="overflow-hidden" ref={emblaRef}>
         <div className="flex">
           {products.map((product) => {
-            // Access all properties via the 'attributes' object
             const { name, price, productImage, slug, description } =
               product.attributes;
-
             const imageUrl = productImage?.data?.[0]?.attributes?.url
-              ? `http://localhost:1337${productImage.data[0].attributes.url}`
+              ? `${STRAPI_URL}${productImage.data[0].attributes.url}` // ✨ FIX: Use the STRAPI_URL variable
               : "https://placehold.co/1600x900/1f2937/f97616?text=No+Image";
+
+            // ✨ FIX: Create a plain-text summary from the description object
+            let summary = description?.[0]?.children?.[0]?.text || "";
+            if (summary.length > 100) {
+              summary = summary.substring(0, 100) + "...";
+            }
 
             return (
               <div
@@ -70,7 +77,8 @@ export default function ProductSlider({ products }: { products: Product[] }) {
                     <div className="flex flex-col flex-grow mt-6">
                       <h3 className="text-xl font-bold">{name}</h3>
                       <p className="mt-2 text-gray-400 leading-relaxed flex-grow">
-                        {description}
+                        {/* ✨ FIX: Use the new summary variable */}
+                        {summary}
                       </p>
                       <p className="mt-4 text-2xl font-bold text-orange-400 text-left">
                         {price}

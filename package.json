@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@strapi/blocks-react-renderer": "^1.0.2",
     "@tailwindcss/typography": "^0.5.16",
     "@types/remarkable": "^2.0.8",
     "cheerio": "^1.1.0",
